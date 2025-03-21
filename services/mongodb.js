@@ -1,19 +1,26 @@
 const mongoose = require("mongoose");
 const dbConfig = require("../config/db.config.js");
 
-// Set strictQuery to true to suppress the warning
 mongoose.set('strictQuery', true);
 
 const connectDB = async () => {
   try {
+    if (!dbConfig.url) {
+      throw new Error('MONGODB_URI is not defined');
+    }
+    
     const conn = await mongoose.connect(dbConfig.url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      dbName: dbConfig.database
+      dbName: dbConfig.database,
+      // Add these options for better security
+      ssl: true,
+      retryWrites: true,
+      w: "majority"
     });
+    
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     console.log(`Using database: ${conn.connection.name}`);
-    console.log(`Connection state: ${mongoose.connection.readyState}`);
     return conn;
   } catch (error) {
     console.error("MongoDB connection error:", error);
@@ -21,18 +28,6 @@ const connectDB = async () => {
   }
 };
 
-const disconnectDB = async () => {
-  try {
-    await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
-  } catch (error) {
-    console.error('MongoDB disconnection error:', error);
-    throw error;
-  }
-};
+module.exports = connectDB;
 
-module.exports = {
-  connectDB,
-  disconnectDB
-};
 

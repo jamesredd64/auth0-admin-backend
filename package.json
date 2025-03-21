@@ -6,8 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "build": "npm install",
+    "vercel-build": "npm install",
     "fix-indexes": "node src/scripts/fix-indexes.js",
-    "test:user": "node tests/testUserEndpoint.js"
+    "test:user": "node tests/testUserEndpoint.js \"auth0|67bb70c5eedb5c4b0ea1ec93\""
   },
   "keywords": [
     "nodejs",
@@ -28,3 +30,5 @@
     "node-fetch": "^3.3.2"
   }
 }
+
+

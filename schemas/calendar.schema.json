@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Calendar Event",
+  "description": "Schema for calendar events",
+  "type": "object",
+  "required": ["title", "start"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the event"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title of the event"
+    },
+    "start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start date and time of the event"
+    },
+    "end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End date and time of the event"
+    },
+    "allDay": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the event is an all-day event"
+    },
+    "extendedProps": {
+      "type": "object",
+      "properties": {
+        "calendar": {
+          "type": "string",
+          "enum": ["Danger", "Success", "Primary", "Warning"],
+          "description": "Event category/color"
+        }
+      },
+      "required": ["calendar"]
+    },
+    "userId": {
+      "type": "string",
+      "description": "ID of the user who owns this event"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of event creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last update"
+    }
+  },
+  "additionalProperties": false
+}

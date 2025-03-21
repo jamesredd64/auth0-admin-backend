@@ -27,6 +27,9 @@ function Initialize-GitRepo {
     git add .
     git commit -m "Initial commit"
 
+    # Create and switch to main branch
+    git branch -M main
+
     # Set up remote repository
     do {
         $remoteUrl = Read-Host "Enter your GitHub repository URL (https://github.com/username/repo.git)"
@@ -43,6 +46,12 @@ function Initialize-GitRepo {
         # Add new remote
         git remote add origin $remoteUrl
 
+        # Set the remote HEAD reference
+        git remote set-head origin -a
+
+        # Configure branch tracking
+        git branch --set-upstream-to=origin/main main
+
         # Test the connection
         $testConnection = git ls-remote --exit-code $remoteUrl 2>&1
         if ($LASTEXITCODE -ne 0) {
@@ -52,9 +61,6 @@ function Initialize-GitRepo {
         }
         break
     } while ($true)
-
-    # Create and switch to main branch
-    git branch -M main
 
     # Force push to remote repository
     $forcePush = Read-Host "Do you want to force push to remote repository? This will overwrite remote history (y/N)"
@@ -70,6 +76,10 @@ function Initialize-GitRepo {
         Write-Host "Push failed. Error: $pushResult" -ForegroundColor Red
         Write-Host "Please ensure you have the correct access rights and the repository exists." -ForegroundColor Yellow
     } else {
+        # Fetch and set up remote tracking
+        git fetch origin
+        git remote set-head origin -a
+        
         Write-Host "`nGit repository initialized successfully!" -ForegroundColor Green
         Write-Host "Remote repository set to: $remoteUrl" -ForegroundColor Cyan
     }
@@ -77,4 +87,5 @@ function Initialize-GitRepo {
 
 # Run the initialization
 Initialize-GitRepo
+
 

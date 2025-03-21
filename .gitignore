@@ -52,3 +52,11 @@ build/
 # Vercel
 .vercel
 
+# Backup folders
+repo-backup/
+repo-backup*/
+
+
+
+
+

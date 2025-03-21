@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 const config = {
-  url: process.env.MONGODB_URI || "mongodb+srv://jredd2013:Fh2LRJ8gwALoWDWm@mern-cluster.oistpfp.mongodb.net/mongo-users-react?retryWrites=true&w=majority",
+  url: process.env.MONGODB_URI || "",
   database: 'mongo-users-react',
   options: {
     useNewUrlParser: true,

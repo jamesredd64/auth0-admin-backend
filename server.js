@@ -7,7 +7,17 @@ const userRoutes = require('./routes/user.routes.js');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5000',
+    'https://your-frontend-vercel-url.vercel.app'  // Add your frontend Vercel URL
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Connect to database before starting server
@@ -36,4 +46,6 @@ const startServer = async () => {
 };
 
 startServer();
+
+
 

@@ -9,10 +9,17 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server.js"
+      "dest": "server.js"
     }
-  ]
+  ],
+  "env": {
+    "MONGODB_URI": "@mongodb_uri",
+    "AUTH0_AUDIENCE": "@auth0_audience",
+    "AUTH0_ISSUER_BASE_URL": "@auth0_issuer_base_url"
+  }
 }
+
+
 
 
 

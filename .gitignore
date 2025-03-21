@@ -56,7 +56,8 @@ build/
 repo-backup/
 repo-backup*/
 
-
-
-
+# Test and script files
+insertTestCalendarEvents.js
+testFetchUser.jsx
+scripts/
 

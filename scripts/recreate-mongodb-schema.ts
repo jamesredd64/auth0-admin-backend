@@ -8,7 +8,7 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: '../.env' });
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/your_database';
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
 // Define the schemas
 const userSchema = new mongoose.Schema({

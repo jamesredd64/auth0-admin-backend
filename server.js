@@ -7,6 +7,9 @@ const userRoutes = require('./routes/user.routes.js');
 
 const app = express();
 
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 // CORS configuration
 app.use(cors({
   origin: [
@@ -25,42 +28,36 @@ app.use(cors({
 
 app.use(express.json());
 
-// Handle favicon.ico requests
-app.get('/favicon.ico', (req, res) => {
-  res.status(204).end(); // No content response
+// Routes
+app.use('/api/users', userRoutes);
+app.use('/api/calendar', calendarRoutes);
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    error: 'Something broke!',
+    message: err.message 
+  });
 });
 
-// Connect to database before starting server
+// Handle 404s
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Not Found',
+    message: 'The requested resource was not found' 
+  });
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
 const startServer = async () => {
   try {
     const db = await connectDB();
     console.log('Database connection established');
-
-    // Routes
-    app.use('/api/users', userRoutes);
-    app.use('/api/calendar', calendarRoutes);
-
-    // Add error handling middleware
-    app.use((err, req, res, next) => {
-      console.error(err.stack);
-      res.status(500).json({ 
-        error: 'Something broke!',
-        message: err.message 
-      });
-    });
-
-    // Handle 404s
-    app.use((req, res) => {
-      res.status(404).json({ 
-        error: 'Not Found',
-        message: 'The requested resource was not found' 
-      });
-    });
-
-    // Health check endpoint
-    app.get('/api/health', (req, res) => {
-      res.json({ status: 'ok', message: 'Server is running' });
-    });
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
@@ -73,6 +70,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

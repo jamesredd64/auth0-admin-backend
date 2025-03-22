@@ -12,8 +12,9 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:5000',
-    'https://vite-front-end.vercel.app'
-    
+    'https://vite-front-end.vercel.app',
+    'https://vite-front-end-git-main.vercel.app',
+    'https://vite-front-end-*.vercel.app'  // For preview deployments
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -65,6 +66,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

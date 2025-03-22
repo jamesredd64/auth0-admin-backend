@@ -2,6 +2,10 @@
   "version": 2,
   "builds": [
     {
+      "src": "public/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "server.js",
       "use": "@vercel/node"
     }
@@ -9,7 +13,7 @@
   "routes": [
     {
       "src": "/favicon.ico",
-      "status": 204
+      "dest": "/public/favicon.ico"
     },
     {
       "src": "/api/(.*)",
@@ -27,5 +31,6 @@
     }
   ]
 }
+
 
 

@@ -6,17 +6,19 @@ const userRoutes = require('./routes/user.routes.js');
 
 const app = express();
 
-// Middleware
+// Updated CORS configuration
 app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:5000',
-    'https://your-frontend-vercel-url.vercel.app'  // Add your frontend Vercel URL
+    'https://vite-front-end.vercel.app'
+    
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  maxAge: 86400  // CORS preflight cache time in seconds
 }));
 app.use(express.json());
 
@@ -29,6 +31,23 @@ const startServer = async () => {
     // Routes
     app.use('/api/users', userRoutes);
     app.use('/api/calendar', calendarRoutes);
+
+    // Add error handling middleware
+    app.use((err, req, res, next) => {
+      console.error(err.stack);
+      res.status(500).json({ 
+        error: 'Something broke!',
+        message: err.message 
+      });
+    });
+
+    // Handle 404s
+    app.use((req, res) => {
+      res.status(404).json({ 
+        error: 'Not Found',
+        message: 'The requested resource was not found' 
+      });
+    });
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {
@@ -46,6 +65,8 @@ const startServer = async () => {
 };
 
 startServer();
+
+
 
 
 

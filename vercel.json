@@ -1,23 +1,17 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
+  "buildCommand": "npm run build",
+  "devCommand": "npm run start",
+  "outputDirectory": ".",
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server.js"
+      "dest": "/server.js"
     }
   ],
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "AUTH0_AUDIENCE": "@auth0_audience",
-    "AUTH0_ISSUER_BASE_URL": "@auth0_issuer_base_url"
-  }
+  "ignoreCommand": "!(scripts/**)"
 }
+
 
 
 

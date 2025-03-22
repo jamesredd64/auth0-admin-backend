@@ -1,12 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./models/index.js');
 const calendarRoutes = require('./routes/calendar.routes');
 const userRoutes = require('./routes/user.routes.js');
 
 const app = express();
 
-// Updated CORS configuration
+// CORS configuration
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -14,14 +15,20 @@ app.use(cors({
     'http://localhost:5000',
     'https://vite-front-end.vercel.app',
     'https://vite-front-end-git-main.vercel.app',
-    'https://vite-front-end-*.vercel.app'  // For preview deployments
+    'https://vite-front-end-*.vercel.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  maxAge: 86400  // CORS preflight cache time in seconds
+  maxAge: 86400
 }));
+
 app.use(express.json());
+
+// Handle favicon.ico requests
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end(); // No content response
+});
 
 // Connect to database before starting server
 const startServer = async () => {
@@ -66,6 +73,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

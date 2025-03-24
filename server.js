@@ -11,6 +11,8 @@ const allowedOrigins = [
   'http://localhost:5000',
   'https://vite-front-end.vercel.app',
   'https://admin-backend-eta.vercel.app',
+  'https://admin-backend-eta.vercel.app/users',
+  'https://admin-backend-eta.vercel.app/calendar',
   'https://*.vercel.app',
   'data:'
 ].filter(Boolean);

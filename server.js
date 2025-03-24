@@ -11,29 +11,11 @@ const allowedOrigins = [
   'http://localhost:5000',
   'https://vite-front-end.vercel.app',
   'https://admin-backend-eta.vercel.app',
+  'https://*.vercel.app',
   'data:'
 ].filter(Boolean);
 
-// Add security headers middleware before CORS
-app.use((req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "font-src 'self' https://fonts.gstatic.com data:; " +
-    "img-src 'self' data: https:; " +
-    "connect-src 'self' https://*;"
-  );
-  // Replace wildcard with specific origin
-  res.header('Access-Control-Allow-Origin', 'https://vite-front-end.vercel.app');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization'); 
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
-}); // <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
-
-
-
+// Remove the separate headers middleware and combine with CORS configuration
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -52,10 +34,25 @@ app.use(cors({
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
   credentials: true,
   maxAge: 86400
 }));
+
+// Add security headers after CORS
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com data:; " +
+    "img-src 'self' data: https:; " +
+    "connect-src 'self' https://*;"
+  );
+  next();
+}); // <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+
+
 
 app.use(express.json());
 
@@ -101,6 +98,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

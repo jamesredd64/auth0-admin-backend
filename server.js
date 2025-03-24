@@ -16,8 +16,7 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:5000',
-    'https://vite-front-end.vercel.app',
-    'vite-front-dshdqbder-jamesredd64s-projects.vercel.app'
+    'https://vite-front-end.vercel.app'   
     
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

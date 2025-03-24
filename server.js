@@ -10,8 +10,9 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5000',
   'https://vite-front-end.vercel.app',
-  'https://fonts.googleapis.com',
-  'https://fonts.gstatic.com',
+  'Content-Security-Policy: style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;
+',
+  
   'data:'
 ].filter(Boolean);
 

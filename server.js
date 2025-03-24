@@ -17,7 +17,11 @@ const allowedOrigins = [
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com"
+    "default-src 'self'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com data:; " +
+    "img-src 'self' data: https:; " +
+    "connect-src 'self' https://*;"
   );
   next();
 });
@@ -89,6 +93,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

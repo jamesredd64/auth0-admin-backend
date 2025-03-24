@@ -10,6 +10,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5000',
   'https://vite-front-end.vercel.app',
+  'https://admin-backend-eta.vercel.app',
   'data:'
 ].filter(Boolean);
 
@@ -18,16 +19,18 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' https://fonts.gstatic.com data:; " +
     "img-src 'self' data: https:; " +
     "connect-src 'self' https://*;"
   );
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept'); 
+  // Replace wildcard with specific origin
+  res.header('Access-Control-Allow-Origin', 'https://vite-front-end.vercel.app');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization'); 
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Credentials', 'true');
   next();
-});
-// <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+}); // <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
 
 
 
@@ -98,6 +101,10 @@ const startServer = async () => {
 };
 
 startServer();
+
+
+
+
 
 
 

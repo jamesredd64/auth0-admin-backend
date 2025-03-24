@@ -15,9 +15,13 @@ const corsOptions = {
   optionsSuccessStatus: 204
 };
 
+// Apply CORS before any other middleware
 app.use(cors(corsOptions));
 
-// Add security headers after CORS
+app.use(express.json());
+
+// Remove or modify the security headers middleware that's adding additional CORS headers
+// Instead, use this simplified version:
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
@@ -76,6 +80,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

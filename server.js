@@ -9,12 +9,10 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5000',
-  'vite-front-end.vercel.app',
-  process.env.FRONTEND_URL,
+  'https://vite-front-end.vercel.app',
   'https://fonts.googleapis.com',
   'https://fonts.gstatic.com',
-  process.env.FRONTEND_URL?.replace('https://', 'https://*-'),
-  'data:' // Allow data URLs
+  'data:'
 ].filter(Boolean);
 
 app.use(cors({
@@ -22,10 +20,13 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.some(allowed => {
-      if (allowed === 'data:') return origin.startsWith('data:');
-      return origin.match(new RegExp(`^${allowed.replace('*', '.*')}$`));
-    })) {
+    // Allow data: URLs
+    if (origin.startsWith('data:')) {
+      return callback(null, true);
+    }
+    
+    // Check if origin is allowed
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -81,6 +82,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

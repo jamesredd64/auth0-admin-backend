@@ -23,6 +23,8 @@ app.use((req, res, next) => {
     "img-src 'self' data: https:; " +
     "connect-src 'self' https://*;"
   );
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept'); 
   next();
 });
 // <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">

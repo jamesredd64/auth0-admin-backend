@@ -5,41 +5,17 @@ require('dotenv').config();
 
 const app = express();
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:5000',
-  'https://vite-front-end.vercel.app',
-  'https://admin-backend-eta.vercel.app',
-  'https://admin-backend-eta.vercel.app/users',
-  'https://admin-backend-eta.vercel.app/calendar',
-  'https://*.vercel.app',
-  'data:'
-].filter(Boolean);
-
-// Remove the separate headers middleware and combine with CORS configuration
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Allow data: URLs
-    if (origin.startsWith('data:')) {
-      return callback(null, true);
-    }
-    
-    // Check if origin is allowed
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+const corsOptions = {
+  origin: 'https://vite-front-end.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
   credentials: true,
-  maxAge: 86400
-}));
+  maxAge: 86400,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 
 // Add security headers after CORS
 app.use((req, res, next) => {
@@ -100,6 +76,8 @@ const startServer = async () => {
 };
 
 startServer();
+
+
 
 
 

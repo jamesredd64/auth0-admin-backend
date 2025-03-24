@@ -15,7 +15,6 @@ const corsOptions = {
   optionsSuccessStatus: 204
 };
 
-
 app.use(cors(corsOptions));
 
 // Add security headers after CORS

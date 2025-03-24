@@ -1,24 +1,36 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const connectDB = require('./models/index.js');
-const calendarRoutes = require('./routes/calendar.routes');
-const userRoutes = require('./routes/user.routes.js');
+require('dotenv').config();
 
 const app = express();
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'vite-front-end.vercel.app',
+  process.env.FRONTEND_URL,
+  'https://fonts.googleapis.com',
+  'https://fonts.gstatic.com',
+  process.env.FRONTEND_URL?.replace('https://', 'https://*-'),
+  'data:' // Allow data URLs
+].filter(Boolean);
 
-// CORS configuration
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5000',
-    'https://vite-front-end.vercel.app'   
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
     
-  ],
+    if (allowedOrigins.some(allowed => {
+      if (allowed === 'data:') return origin.startsWith('data:');
+      return origin.match(new RegExp(`^${allowed.replace('*', '.*')}$`));
+    })) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -69,6 +81,7 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 
 

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "cross-env RUN_MODE=d node server.js",
+    "dev": "cross-env node server.js",
     "build": "npm install",
     "vercel-build": "npm install",
     "fix-indexes": "node src/scripts/fix-indexes.js",

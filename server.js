@@ -1,27 +1,16 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Update the import to use the correct path
 const connectDB = require('./services/mongodb.js');
+const corsConfig = require('./config/cors.config.js');
 const userRoutes = require('./routes/user.routes');
 const calendarRoutes = require('./routes/calendar.routes');
 
 const app = express();
 
-const corsOptions = {
-  origin: 'https://vite-front-end.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-  credentials: true,
-  maxAge: 86400,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
-
-// Apply CORS before any other middleware
-app.use(cors(corsOptions));
+// Apply CORS configuration
+app.use(corsConfig);
 
 app.use(express.json());
 

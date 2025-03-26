@@ -1,21 +1,35 @@
 const mongoose = require('mongoose');
 
 const calendarEventSchema = new mongoose.Schema({
-  id: {
+  auth0Id: {
     type: String,
-    required: false, // Mongoose will handle _id automatically
+    required: true,
+    validate: {
+      validator: function(v) {
+        return v.startsWith('auth0|');
+      },
+      message: props => `${props.value} must start with "auth0|"`
+    }
   },
   title: {
     type: String,
     required: true
   },
   start: {
-    type: String,
+    type: Date,
     required: true
   },
   end: {
-    type: String,
+    type: Date,
     required: true
+  },
+  startTime: {
+    type: String,
+    default: '00:00'
+  },
+  endTime: {
+    type: String,
+    default: '23:59'
   },
   allDay: {
     type: Boolean,
@@ -35,7 +49,7 @@ const calendarEventSchema = new mongoose.Schema({
   toJSON: { 
     virtuals: true,
     transform: function(doc, ret) {
-      ret.id = ret._id; // Ensure the ID is properly set
+      ret.id = ret._id;
       delete ret._id;
       delete ret.__v;
       return ret;
@@ -43,4 +57,9 @@ const calendarEventSchema = new mongoose.Schema({
   }
 });
 
+// Add index for auth0Id
+calendarEventSchema.index({ auth0Id: 1 });
+
 module.exports = mongoose.model('CalendarEvent', calendarEventSchema);
+
+

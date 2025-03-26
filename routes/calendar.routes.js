@@ -5,9 +5,10 @@ const calendarController = require('../controllers/calendar.controller.js');
 // Routes
 router.post('/', calendarController.createEvent);
 router.get('/', calendarController.getEvents);
-router.get('/:id', calendarController.getEventById);
+router.get('/:id', calendarController.getEventById);  // This will now handle auth0Id
 router.patch('/:id', calendarController.updateEvent);
 router.delete('/:id', calendarController.deleteEvent);
 
 module.exports = router;
+
 

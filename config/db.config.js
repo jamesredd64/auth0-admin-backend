@@ -1,18 +1,23 @@
 
 require('dotenv').config();
 
+const isVercel = process.env.VERCEL === '1';
+const runMode = process.env.RUN_MODE || 'p';
+const isDevMode = !isVercel && runMode.toLowerCase() === 'd';
+
 const config = {
   url: process.env.MONGODB_URI || "",
-  database: 'mongo-users-react',
+  database: isDevMode ? 'mongo-users-react-dev' : 'mongo-users-react',
   options: {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 15000, // Timeout after 15 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    dbName: 'mongo-users-react' // Explicitly set database name
+    serverSelectionTimeoutMS: 30000,
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 30000,
+    dbName: isDevMode ? 'mongo-users-react-dev' : 'mongo-users-react'
   }
 };
-
+console.log("Database name is  :", config.database);
 module.exports = config;
 
 

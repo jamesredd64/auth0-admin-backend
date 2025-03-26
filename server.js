@@ -6,19 +6,42 @@ const userRoutes = require('./routes/user.routes.js');
 
 const app = express();
 
-// Updated CORS configuration
+// Check if we're running on Vercel
+const isVercel = process.env.VERCEL === '1';
+const runMode = process.env.RUN_MODE || 'p';
+const isDevMode = !isVercel && runMode.toLowerCase() === 'd';
+
+// Updated CORS configuration with dynamic origins
+const allowedOrigins = isDevMode
+  ? [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:5000'
+    ]
+  : [
+      'https://vite-front-end.vercel.app',
+      'https://admin-backend-eta.vercel.app'
+    ];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5000',
-    'https://vite-front-end.vercel.app'
-    
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Added PATCH
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Cache-Control',
+    'Pragma',
+    'X-Requested-With',
+    'Accept',
+    'Accept-Version',
+    'Content-Length',
+    'Content-MD5',
+    'Date',
+    'X-Api-Version'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Length', 'X-Requested-With'],
   credentials: true,
-  maxAge: 86400  // CORS preflight cache time in seconds
+  maxAge: 86400 // 24 hours
 }));
 app.use(express.json());
 
@@ -51,20 +74,34 @@ const startServer = async () => {
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {
-      res.json({ status: 'ok', message: 'Server is running' });
+      res.json({ 
+        status: 'ok', 
+        message: 'Server is running',
+        mode: isDevMode ? 'development' : 'production',
+        environment: isVercel ? 'vercel' : 'local'
+      });
     });
 
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
+    // Only start the server if we're not on Vercel
+    if (!isVercel) {
+      const PORT = process.env.PORT || (isDevMode ? 5000 : 3000);
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT} in ${isDevMode ? 'development' : 'production'} mode`);
+      });
+    }
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
   }
 };
 
-startServer();
+// Start server if not on Vercel
+if (!isVercel) {
+  startServer();
+}
+
+// Export the app for Vercel
+module.exports = app;
 
 
 

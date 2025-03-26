@@ -5,7 +5,6 @@ require('dotenv').config();
 
 const app = express();
 
-<<<<<<< HEAD
 const corsOptions = {
   origin: 'https://vite-front-end.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -19,45 +18,6 @@ const corsOptions = {
 // Apply CORS before any other middleware
 app.use(cors(corsOptions));
 
-=======
-// Check if we're running on Vercel
-const isVercel = process.env.VERCEL === '1';
-const runMode = process.env.RUN_MODE || 'p';
-const isDevMode = !isVercel && runMode.toLowerCase() === 'd';
-
-// Updated CORS configuration with dynamic origins
-const allowedOrigins = isDevMode
-  ? [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://localhost:5000'
-    ]
-  : [
-      'https://vite-front-end.vercel.app',
-      'https://admin-backend-eta.vercel.app'
-    ];
-
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Added PATCH
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'Cache-Control',
-    'Pragma',
-    'X-Requested-With',
-    'Accept',
-    'Accept-Version',
-    'Content-Length',
-    'Content-MD5',
-    'Date',
-    'X-Api-Version'
-  ],
-  exposedHeaders: ['Content-Length', 'X-Requested-With'],
-  credentials: true,
-  maxAge: 86400 // 24 hours
-}));
->>>>>>> import-backup
 app.use(express.json());
 
 // Remove or modify the security headers middleware that's adding additional CORS headers
@@ -109,12 +69,12 @@ const startServer = async () => {
     const db = await connectDB();
     console.log('Database connection established');
 
-<<<<<<< HEAD
+
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
-=======
+
     // Routes
     app.use('/api/users', userRoutes);
     app.use('/api/calendar', calendarRoutes);
@@ -153,7 +113,6 @@ const startServer = async () => {
         console.log(`Server is running on port ${PORT} in ${isDevMode ? 'development' : 'production'} mode`);
       });
     }
->>>>>>> import-backup
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);

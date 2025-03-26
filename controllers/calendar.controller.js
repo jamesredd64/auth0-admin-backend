@@ -1,11 +1,8 @@
-const CalendarEvent = require('../models/calendar');
+const CalendarEvent = require('../models/calendar.model');
 const mongoose = require('mongoose');
 
 exports.createEvent = async (req, res) => {
   try {
-    console.log('Received event data:', req.body);
-
-    // Validate required fields
     if (!req.body.title || !req.body.start) {
       return res.status(400).json({
         success: false,
@@ -13,14 +10,17 @@ exports.createEvent = async (req, res) => {
       });
     }
 
-    // Format the dates properly
+    const parseDateTime = (dateTimeStr) => {
+      const date = new Date(dateTimeStr);
+      return date;
+    };
+
     const eventData = {
-      _id: req.body.id || new mongoose.Types.ObjectId(), // Use provided ID or generate new
       title: req.body.title,
-      start: new Date(req.body.start),
-      end: req.body.end ? new Date(req.body.end) : new Date(req.body.start),
-      allDay: req.body.allDay || true,
-      userId: req.body.userId || 'default',
+      start: parseDateTime(req.body.start),
+      end: parseDateTime(req.body.end || req.body.start),
+      allDay: req.body.allDay ?? true,
+      auth0Id: req.body.auth0Id,
       extendedProps: {
         calendar: req.body.extendedProps?.calendar?.toLowerCase(),
         description: req.body.extendedProps?.description || '',
@@ -28,12 +28,8 @@ exports.createEvent = async (req, res) => {
       }
     };
 
-    console.log('Formatted event data:', eventData);
-
     const event = new CalendarEvent(eventData);
     const savedEvent = await event.save();
-    
-    console.log('Event saved successfully:', savedEvent);
     
     res.status(201).json({
       success: true,
@@ -52,40 +48,91 @@ exports.createEvent = async (req, res) => {
 exports.getEvents = async (req, res) => {
   try {
     const events = await CalendarEvent.find();
-    res.json({ success: true, events });
+    res.json({
+      success: true,
+      events: formattedEvents
+    });
   } catch (error) {
-    console.error('Error fetching events:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      events: []
+    });
   }
 };
 
+// Modified to search by auth0Id instead of _id
 exports.getEventById = async (req, res) => {
   try {
-    const event = await CalendarEvent.findById(req.params.id);
-    if (!event) {
-      return res.status(404).json({ success: false, message: 'Event not found' });
+    const events = await CalendarEvent.find({ auth0Id: req.params.id });
+    if (!events || events.length === 0) {
+      return res.json([]); // Return empty array instead of error for calendar
     }
-    res.json({ success: true, event });
+    
+    // Format events for FullCalendar
+    const formattedEvents = events.map(event => ({
+      id: event._id.toString(),
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      extendedProps: event.extendedProps
+    }));
+
+    res.json(formattedEvents); // Return direct array of events
   } catch (error) {
-    console.error('Error fetching event:', error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Error fetching events:', error);
+    res.json([]); // Return empty array on error for graceful fallback
   }
 };
 
 exports.updateEvent = async (req, res) => {
   try {
-    const event = await CalendarEvent.findByIdAndUpdate(
+    const parseDate = (dateStr, isEndDate) => {
+      const date = new Date(dateStr);
+      if (!isEndDate) {
+        return date.toISOString();
+      }
+      // For end date, ensure it's set to the end of the day
+      date.setHours(23, 59, 59, 999);
+      return date.toISOString();
+    };
+
+    const updateData = {
+      ...req.body,
+      start: parseDate(req.body.start, false),
+      end: parseDate(req.body.end, true)
+    };
+
+    console.log('Processing event update:', {
+      receivedStart: req.body.start,
+      receivedEnd: req.body.end,
+      processedStart: updateData.start,
+      processedEnd: updateData.end
+    });
+
+    const updatedEvent = await CalendarEvent.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
-    if (!event) {
-      return res.status(404).json({ success: false, message: 'Event not found' });
+
+    if (!updatedEvent) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
     }
-    res.json({ success: true, event });
+
+    res.json({
+      success: true,
+      event: updatedEvent
+    });
   } catch (error) {
     console.error('Error updating event:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -101,6 +148,18 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -2,10 +2,21 @@
 node_modules/
 package-lock.json
 
-# Environment variables
+# VS Code workspace settings
+.vscode/*
+!.vscode/extensions.json
+
+# Environment files
 .env
 .env.local
 .env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Workspace-specific files
+*.code-workspace
 
 # Logs
 logs
@@ -21,6 +32,7 @@ pids
 *.pid.lock
 
 # Coverage directory
+lib-cov
 coverage
 
 # IDEs and editors
@@ -60,4 +72,5 @@ repo-backup*/
 insertTestCalendarEvents.js
 testFetchUser.jsx
 scripts/
+
 

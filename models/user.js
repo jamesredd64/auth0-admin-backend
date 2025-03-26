@@ -111,21 +111,31 @@ userSchema.statics.findByAuth0Id = function(auth0Id) {
 const createIndexes = async (model) => {
   try {
     console.log('Creating indexes...');
-    await Promise.all([
+    // Add timeout promise
+    const timeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Index creation timed out')), 30000)
+    );
+    
+    const indexPromises = [
       model.collection.createIndex({ auth0Id: 1 }, { unique: true, background: true }),
       model.collection.createIndex({ email: 1 }, { unique: true, background: true })
+    ];
+
+    await Promise.race([
+      Promise.all(indexPromises),
+      timeout
     ]);
+    
     console.log('Indexes created successfully');
   } catch (err) {
     console.error('Error creating indexes:', err);
-    // Don't throw error, just log it
+    // Don't exit process, just log error
   }
 };
 
 const User = mongoose.model('User', userSchema);
 
-// Create indexes asynchronously
-createIndexes(User);
+
 
 module.exports = User;
 

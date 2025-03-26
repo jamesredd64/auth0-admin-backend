@@ -3,6 +3,11 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+// Update the import to use the correct path
+const connectDB = require('./services/mongodb.js');
+const userRoutes = require('./routes/user.routes');
+const calendarRoutes = require('./routes/calendar.routes');
+
 const app = express();
 
 const corsOptions = {
@@ -66,63 +71,21 @@ app.get('/api/health', (req, res) => {
 
 const startServer = async () => {
   try {
-    const db = await connectDB();
+    await connectDB(); // Remove the db variable since we don't use it
     console.log('Database connection established');
 
-
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || (isDevMode ? 5000 : 3000);
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running on port`);
     });
-
-    // Routes
-    app.use('/api/users', userRoutes);
-    app.use('/api/calendar', calendarRoutes);
-
-    // Add error handling middleware
-    app.use((err, req, res, next) => {
-      console.error(err.stack);
-      res.status(500).json({ 
-        error: 'Something broke!',
-        message: err.message 
-      });
-    });
-
-    // Handle 404s
-    app.use((req, res) => {
-      res.status(404).json({ 
-        error: 'Not Found',
-        message: 'The requested resource was not found' 
-      });
-    });
-
-    // Health check endpoint
-    app.get('/api/health', (req, res) => {
-      res.json({ 
-        status: 'ok', 
-        message: 'Server is running',
-        mode: isDevMode ? 'development' : 'production',
-        environment: isVercel ? 'vercel' : 'local'
-      });
-    });
-
-    // Only start the server if we're not on Vercel
-    if (!isVercel) {
-      const PORT = process.env.PORT || (isDevMode ? 5000 : 3000);
-      app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT} in ${isDevMode ? 'development' : 'production'} mode`);
-      });
-    }
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
   }
 };
 
-// Start server if not on Vercel
-if (!isVercel) {
-  startServer();
-}
+// Start server  
+startServer();
 
 // Export the app for Vercel
 module.exports = app;

@@ -3,26 +3,23 @@ const mongoose = require('mongoose');
 
 exports.createEvent = async (req, res) => {
   try {
-    if (!req.body.title || !req.body.start) {
+    console.log('Creating event with data:', req.body);
+
+    if (!req.body.title || !req.body.start || !req.body.auth0Id) {
       return res.status(400).json({
         success: false,
-        message: 'Title and start date are required'
+        message: 'Title, start date, and auth0Id are required'
       });
     }
 
-    const parseDateTime = (dateTimeStr) => {
-      const date = new Date(dateTimeStr);
-      return date;
-    };
-
     const eventData = {
       title: req.body.title,
-      start: parseDateTime(req.body.start),
-      end: parseDateTime(req.body.end || req.body.start),
+      start: new Date(req.body.start),
+      end: new Date(req.body.end || req.body.start),
       allDay: req.body.allDay ?? true,
       auth0Id: req.body.auth0Id,
       extendedProps: {
-        calendar: req.body.extendedProps?.calendar?.toLowerCase(),
+        calendar: req.body.extendedProps?.calendar || 'primary',
         description: req.body.extendedProps?.description || '',
         location: req.body.extendedProps?.location || ''
       }
@@ -31,6 +28,8 @@ exports.createEvent = async (req, res) => {
     const event = new CalendarEvent(eventData);
     const savedEvent = await event.save();
     
+    console.log('Event saved successfully:', savedEvent);
+
     res.status(201).json({
       success: true,
       event: savedEvent
@@ -39,8 +38,7 @@ exports.createEvent = async (req, res) => {
     console.error('Error creating event:', error);
     res.status(500).json({
       success: false,
-      message: error.message,
-      details: error.stack
+      message: error.message
     });
   }
 };
@@ -63,12 +61,15 @@ exports.getEvents = async (req, res) => {
 // Modified to search by auth0Id instead of _id
 exports.getEventById = async (req, res) => {
   try {
+    console.log('Fetching events for auth0Id:', req.params.id);
     const events = await CalendarEvent.find({ auth0Id: req.params.id });
+    console.log('Found events:', events.length);
+    
     if (!events || events.length === 0) {
-      return res.json([]); // Return empty array instead of error for calendar
+      console.log('No events found for user');
+      return res.json([]); 
     }
     
-    // Format events for FullCalendar
     const formattedEvents = events.map(event => ({
       id: event._id.toString(),
       title: event.title,
@@ -78,10 +79,11 @@ exports.getEventById = async (req, res) => {
       extendedProps: event.extendedProps
     }));
 
-    res.json(formattedEvents); // Return direct array of events
+    console.log('Returning formatted events:', formattedEvents.length);
+    res.json(formattedEvents);
   } catch (error) {
-    console.error('Error fetching events:', error);
-    res.json([]); // Return empty array on error for graceful fallback
+    console.error('Error in getEventById:', error);
+    res.json([]);
   }
 };
 

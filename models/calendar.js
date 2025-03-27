@@ -1,25 +1,40 @@
+const express = require('express');
+const router = express.Router();
 const mongoose = require('mongoose');
 
-const calendarEventSchema = new mongoose.Schema({
-  userId: {
-    type: String,
-    required: true
-  },
-  auth0Id: {
-    type: String,
-    required: true,
-    validate: {
-      validator: function(v) {
-        return v.startsWith('auth0|');
+// Add diagnostic endpoint
+router.get('/debug/connection', async (req, res) => {
+  try {
+    // Get the MongoDB connection
+    const db = mongoose.connection.db;
+    
+    // List all collections
+    const collections = await db.listCollections().toArray();
+    
+    // Get the calendar events collection stats
+    const stats = await db.collection('calendar_events').stats();
+    
+    // Get a sample document
+    const sampleDoc = await db.collection('calendar_events')
+      .findOne({}, { sort: { _id: -1 } });
+
+    res.json({
+      database: db.databaseName,
+      collections: collections.map(c => c.name),
+      calendarEventsStats: {
+        documentCount: stats.count,
+        totalSize: stats.size,
+        avgDocumentSize: stats.avgObjSize
       },
-      message: props => `${props.value} must start with "auth0|"`
-    }
+      sampleDocument: sampleDoc
+    });
+  } catch (error) {
+    console.error('Database diagnostic error:', error);
+    res.status(500).json({
+      error: 'Failed to get database diagnostics',
+      details: error.message
+    });
   }
-}, {
-  timestamps: true
 });
 
-// Add index for auth0Id
-calendarEventSchema.index({ auth0Id: 1 });
-
-module.exports = mongoose.model('CalendarEvent', calendarEventSchema);
+module.exports = router;

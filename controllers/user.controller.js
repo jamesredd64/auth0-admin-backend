@@ -1,33 +1,44 @@
 const mongoose = require('mongoose');
 const User = require("../models/user.js");
 
-// Add validation to ensure User model is loaded
-if (!mongoose.models.User) {
-    throw new Error('User model not properly initialized');
-}
-
-// Validate model schema and ensure required paths exist
-const requiredPaths = ['auth0Id', 'email', 'marketingBudget', 'address'];  // Changed from 'profile.marketingBudget' to 'marketingBudget'
-const userSchema = User.schema;
-
-requiredPaths.forEach(path => {
-    if (!userSchema.path(path) && !userSchema.nested[path]) {
-        throw new Error(`Required path '${path}' missing in User schema`);
+// Ensure model initialization
+const initializeUserModel = () => {
+    // Check if model exists
+    if (!mongoose.models.User) {
+        console.log('Initializing User model...');
+        // If model doesn't exist, require it again to ensure initialization
+        require("../models/user.js");
     }
+
+    // Validate model schema
+    const userSchema = mongoose.models.User.schema;
+    const requiredPaths = ['auth0Id', 'email', 'marketingBudget', 'address'];
+
+    requiredPaths.forEach(path => {
+        if (!userSchema.path(path) && !userSchema.nested[path]) {
+            throw new Error(`Required path '${path}' missing in User schema`);
+        }
+    });
+
+    // Initialize indexes
+    return Promise.all([
+        mongoose.models.User.collection.createIndex({ auth0Id: 1 }, { unique: true }),
+        mongoose.models.User.collection.createIndex({ email: 1 }, { unique: true })
+    ]).catch(err => {
+        console.error('Error creating indexes:', err);
+        throw err;
+    });
+};
+
+// Initialize model and indexes before exposing controller methods
+initializeUserModel().then(() => {
+    console.log('User model initialized successfully');
+}).catch(err => {
+    console.error('Failed to initialize User model:', err);
+    process.exit(1);
 });
 
-// Initialize indexes with proper options
-const indexPromises = [
-    User.collection.createIndex({ auth0Id: 1 }, { unique: true }),
-    User.collection.createIndex({ email: 1 }, { unique: true })
-];
-
-Promise.all(indexPromises).catch(err => {
-    console.error('Error creating indexes:', err);
-    throw err;
-});
-
-// Get user by auth0Id
+// Controller methods
 exports.findByAuth0Id = async (req, res) => {
     try {
         const { auth0Id } = req.params;
@@ -39,7 +50,6 @@ exports.findByAuth0Id = async (req, res) => {
 
         if (!user) {
             console.log('Controller: No user found for auth0Id:', decodedAuth0Id);
-            // Return 204 status code to indicate no content but successful request
             return res.status(204).send();
         }
 

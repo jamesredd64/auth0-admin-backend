@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
-// Log to verify model creation
-console.log('Defining User model...');
+console.log('Defining User model schema...');
 
 const userSchema = new mongoose.Schema({
   auth0Id: {
@@ -25,12 +24,6 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
     default: ''
-  },
-  profile: {
-    profilePictureUrl: {
-      type: String,
-      default: ''
-    }
   },
   marketingBudget: {
     adBudget: {
@@ -98,45 +91,19 @@ const userSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'users'
 });
 
-userSchema.statics.findByAuth0Id = function(auth0Id) {
-  const decodedAuth0Id = decodeURIComponent(auth0Id);
-  console.log('Finding user by decoded auth0Id:', decodedAuth0Id);
-  return this.findOne({ auth0Id: decodedAuth0Id });
-};
+// Add any pre/post hooks if needed
+userSchema.pre('save', function(next) {
+  console.log('Pre-save hook triggered for user:', this.auth0Id);
+  next();
+});
 
-// Create indexes after model initialization
-const createIndexes = async (model) => {
-  try {
-    console.log('Creating indexes...');
-    // Add timeout promise
-    const timeout = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Index creation timed out')), 30000)
-    );
-    
-    const indexPromises = [
-      model.collection.createIndex({ auth0Id: 1 }, { unique: true, background: true }),
-      model.collection.createIndex({ email: 1 }, { unique: true, background: true })
-    ];
-
-    await Promise.race([
-      Promise.all(indexPromises),
-      timeout
-    ]);
-    
-    console.log('Indexes created successfully');
-  } catch (err) {
-    console.error('Error creating indexes:', err);
-    // Don't exit process, just log error
-  }
-};
-
+// Create and export the model
 const User = mongoose.model('User', userSchema);
-
-
+console.log('User model compiled successfully');
 
 module.exports = User;
-
 

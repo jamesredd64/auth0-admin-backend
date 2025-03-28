@@ -63,7 +63,7 @@ exports.getEventById = async (req, res) => {
   try {
     console.log('Fetching events for auth0Id:', req.params.id);
     const events = await CalendarEvent.find({ auth0Id: req.params.id });
-    console.log('Found events:', events.length);
+    console.log('Found events in DB:', events.length);
     
     if (!events || events.length === 0) {
       console.log('No events found for user');
@@ -83,7 +83,7 @@ exports.getEventById = async (req, res) => {
     res.json(formattedEvents);
   } catch (error) {
     console.error('Error in getEventById:', error);
-    res.json([]);
+    res.status(500).json({ error: 'Failed to fetch events' });
   }
 };
 

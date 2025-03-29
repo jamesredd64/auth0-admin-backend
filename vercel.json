@@ -2,44 +2,13 @@
   "version": 2,
   "builds": [
     {
-      "src": "public/**",
-      "use": "@vercel/static"
-    },
-    {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/favicon.ico",
-      "dest": "/public/favicon.ico"
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "/public/images/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "src": "/users/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "src": "/calendar/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "src": "/(.*)",
       "dest": "server.js"
     }
   ],
@@ -48,7 +17,7 @@
       "source": "/api/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Origin", "value": "https://vite-front-end.vercel.app" },
         { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
         { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
       ]

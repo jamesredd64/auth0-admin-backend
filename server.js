@@ -9,6 +9,9 @@ const calendarRoutes = require('./routes/calendar.routes');
 
 const app = express();
 
+// Serve static files from the public directory
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
 // Apply CORS configuration
 app.use(corsConfig);
 

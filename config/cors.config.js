@@ -1,15 +1,12 @@
 const cors = require('cors');
 
 const productionOrigins = [
-  'https://vite-front-end.vercel.app',
-  'https://admin-backend-eta.vercel.app'
+  'https://vite-front-end.vercel.app'
 ];
 
 const developmentOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:5173',
-  'http://localhost:5000'
+  'http://localhost:3000',  // Frontend dev server
+  'http://localhost:5173'   // Vite dev server
 ];
 
 const allowedOrigins = process.env.NODE_ENV === 'production' 

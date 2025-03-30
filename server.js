@@ -56,9 +56,87 @@ app.use((req, res) => {
   });
 });
 
-// Health check endpoint
+// Health check endpoint with detailed info
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+  const status = {
+    status: 'ok',
+    timestamp: new Date(),
+    environment: process.env.NODE_ENV || 'development',
+    server: {
+      uptime: process.uptime(),
+      memoryUsage: process.memoryUsage(),
+      nodeVersion: process.version,
+    },
+    database: {
+      connected: mongoose.connection.readyState === 1,
+      host: mongoose.connection.host,
+      name: mongoose.connection.name
+    }
+  };
+  
+  res.json(status);
+});
+
+// Simple HTML status page for browser viewing
+app.get('/', (req, res) => {
+  const uptime = process.uptime();
+  const days = Math.floor(uptime / 86400);
+  const hours = Math.floor((uptime % 86400) / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Server Status</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+          }
+          .status-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          .status-ok {
+            color: #2ecc71;
+            font-weight: bold;
+          }
+          .status-error {
+            color: #e74c3c;
+            font-weight: bold;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="status-card">
+          <h1>🚀 Server Status</h1>
+          <p>Status: <span class="status-ok">Running</span></p>
+          <p>Environment: ${process.env.NODE_ENV || 'development'}</p>
+          <p>Uptime: ${days}d ${hours}h ${minutes}m</p>
+          <p>Node Version: ${process.version}</p>
+          <p>Database: <span class="${mongoose.connection.readyState === 1 ? 'status-ok' : 'status-error'}">
+            ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}
+          </span></p>
+          <p>Last Updated: ${new Date().toLocaleString()}</p>
+        </div>
+        <div class="status-card">
+          <h2>API Endpoints</h2>
+          <p>Health Check: <code>/api/health</code></p>
+          <p>Users API: <code>/api/users</code></p>
+          <p>Calendar API: <code>/api/calendar</code></p>
+        </div>
+      </body>
+    </html>
+  `;
+  
+  res.send(html);
 });
 
 const startServer = async () => {

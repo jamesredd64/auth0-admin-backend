@@ -16,6 +16,14 @@
       "destination": "server.js"
     },
     {
+      "source": "/favicon.ico",
+      "destination": "/public/favicon.ico"
+    },
+    {
+      "source": "/favicon.png",
+      "destination": "/public/favicon.png"
+    },
+    {
       "source": "/images/:path*",
       "destination": "/public/images/:path*"
     },

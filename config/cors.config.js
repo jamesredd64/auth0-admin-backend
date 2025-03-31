@@ -1,45 +1,21 @@
 const cors = require('cors');
 
-const productionOrigins = [
+const allowedOrigins = [
   'https://vite-front-end.vercel.app',
   'https://admin-backend-eta.vercel.app',
-  'capacitor://localhost', // For mobile apps using Capacitor
-  'ionic://localhost',     // For Ionic apps
-  'http://localhost',      // For local mobile testing
-  'null',                 // For some mobile browsers
-  '*'                     // WARNING: Only for testing. Remove in production
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'capacitor://localhost',
+  'ionic://localhost'
 ];
-
-const developmentOrigins = [
-  'http://localhost:3000',    // Frontend dev server
-  'http://localhost:5173',    // Vite dev server
-  'http://localhost',         // Generic localhost
-  'capacitor://localhost',    // For mobile apps using Capacitor
-  'ionic://localhost',        // For Ionic apps
-  'http://192.168.1.*',      // Local network IPs
-  'null'                     // For some mobile browsers
-];
-
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? productionOrigins 
-  : [...developmentOrigins, ...productionOrigins];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests)
+    // Allow requests with no origin (like mobile apps)
     if (!origin) return callback(null, true);
-
-    // Check if the origin matches any allowed patterns
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin === '*') return true;
-      if (allowedOrigin.includes('*')) {
-        const pattern = new RegExp('^' + allowedOrigin.replace(/\*/g, '.*') + '$');
-        return pattern.test(origin);
-      }
-      return allowedOrigin === origin;
-    });
-
-    if (isAllowed) {
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

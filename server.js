@@ -9,16 +9,18 @@ const calendarRoutes = require('./routes/calendar.routes');
 
 const app = express();
 
+// Apply CORS configuration BEFORE other middleware
+app.use(corsConfig);
+
+// Handle OPTIONS preflight requests
+app.options('*', corsConfig);
+
 // Serve static files from the public directory
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
-// Apply CORS configuration
-app.use(corsConfig);
-
 app.use(express.json());
 
-// Remove or modify the security headers middleware that's adding additional CORS headers
-// Instead, use this simplified version:
+// Simplified security headers
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
@@ -29,17 +31,13 @@ app.use((req, res, next) => {
     "connect-src 'self' https://*;"
   );
   next();
-}); // <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
-
-
-
-app.use(express.json());
+});
 
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/calendar', calendarRoutes);
 
-// Add error handling middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 

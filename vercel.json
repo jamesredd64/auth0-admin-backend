@@ -12,6 +12,14 @@
   ],
   "rewrites": [
     {
+      "source": "/favicon.ico",
+      "destination": "/public/favicon.ico"
+    },
+    {
+      "source": "/favicon.png",
+      "destination": "/public/favicon.png"
+    },
+    {
       "source": "/",
       "destination": "server.js"
     },
@@ -21,6 +29,15 @@
     }
   ],
   "headers": [
+    {
+      "source": "/favicon.(ico|png)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/api/(.*)",
       "headers": [

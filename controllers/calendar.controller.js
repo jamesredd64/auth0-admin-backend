@@ -45,16 +45,29 @@ exports.createEvent = async (req, res) => {
 
 exports.getEvents = async (req, res) => {
   try {
-    const events = await CalendarEvent.find();
-    res.json({
-      success: true,
-      events: formattedEvents
-    });
+    const { auth0Id } = req.params;
+    console.log('Fetching events for auth0Id:', auth0Id);
+
+    const events = await CalendarEvent.find({ auth0Id });
+    console.log(`Found ${events.length} events`);
+
+    const formattedEvents = events.map(event => ({
+      id: event._id.toString(),
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      extendedProps: {
+        calendar: event.extendedProps.calendar || 'primary',
+        description: event.extendedProps.description,
+        location: event.extendedProps.location
+      }
+    }));
+
+    res.json(formattedEvents);
   } catch (error) {
-    res.json({
-      success: false,
-      events: []
-    });
+    console.error('Error fetching events:', error);
+    res.status(500).json({ message: 'Error fetching events', error: error.message });
   }
 };
 
@@ -66,8 +79,7 @@ exports.getEventById = async (req, res) => {
     console.log('Found events in DB:', events.length);
     
     if (!events || events.length === 0) {
-      console.log('No events found for user');
-      return res.json([]); 
+      return res.json({ events: [] }); // Return object with empty events array
     }
     
     const formattedEvents = events.map(event => ({
@@ -79,11 +91,10 @@ exports.getEventById = async (req, res) => {
       extendedProps: event.extendedProps
     }));
 
-    console.log('Returning formatted events:', formattedEvents.length);
-    res.json(formattedEvents);
+    res.json({ events: formattedEvents }); // Return object with events array
   } catch (error) {
-    console.error('Error in getEventById:', error);
-    res.status(500).json({ error: 'Failed to fetch events' });
+    console.error('Error fetching events:', error);
+    res.json({ events: [] }); // Return object with empty events array on error
   }
 };
 

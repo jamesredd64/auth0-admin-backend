@@ -20,6 +20,10 @@
       "destination": "/public/favicon.png"
     },
     {
+      "source": "/status",
+      "destination": "server.js"
+    },
+    {
       "source": "/",
       "destination": "server.js"
     },

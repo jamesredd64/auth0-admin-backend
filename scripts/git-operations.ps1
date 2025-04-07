@@ -459,8 +459,31 @@ function Show-GitMenu {
     Write-Host "12: Switch Environment (Dev/Prod)"
     Write-Host "13: Overwrite specified branch"
     Write-Host "14: Compare branches (diff)"
+    Write-Host "15: Connect branch to remote"
     Write-Host "Q: Quit"
     Write-Host "=================================================="
+}
+
+function Connect-RemoteBranch {
+    $currentBranch = git rev-parse --abbrev-ref HEAD
+    Write-Host "`nCurrent branch: $currentBranch"
+    Write-Host "1: Connect and push to remote (--set-upstream)"
+    Write-Host "2: Connect and force push to remote"
+    Write-Host "3: Back"
+    
+    $choice = Read-Host "`nEnter choice"
+    switch ($choice) {
+        '1' {
+            git push --set-upstream origin $currentBranch
+        }
+        '2' {
+            Write-Host "`nWARNING: Force push will overwrite any existing remote branch!"
+            $confirm = Read-Host "Continue with force push? (y/n)"
+            if ($confirm -eq 'y') {
+                git push --force --set-upstream origin $currentBranch
+            }
+        }
+    }
 }
 
 # Main loop
@@ -499,6 +522,7 @@ do {
         '12' { Switch-Environment }
         '13' { Overwrite-Branch }
         '14' { Compare-Branches }
+        '15' { Connect-RemoteBranch }
     }
     if ($selection -ne 'q') {
         Write-Host "`nPress any key to continue..."

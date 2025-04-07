@@ -12,12 +12,17 @@ exports.createEvent = async (req, res) => {
       });
     }
 
+    // Convert google-oauth2| to auth0| for database storage
+    const auth0Id = req.body.auth0Id.startsWith('google-oauth2|')
+      ? `auth0|${req.body.auth0Id.split('|')[1]}`
+      : req.body.auth0Id;
+
     const eventData = {
       title: req.body.title,
       start: new Date(req.body.start),
       end: new Date(req.body.end || req.body.start),
       allDay: req.body.allDay ?? true,
-      auth0Id: req.body.auth0Id,
+      auth0Id,
       extendedProps: {
         calendar: req.body.extendedProps?.calendar || 'primary',
         description: req.body.extendedProps?.description || '',
@@ -45,7 +50,13 @@ exports.createEvent = async (req, res) => {
 
 exports.getEvents = async (req, res) => {
   try {
-    const { auth0Id } = req.params;
+    let { auth0Id } = req.params;
+    
+    // Convert google-oauth2| to auth0| for database lookup
+    auth0Id = auth0Id.startsWith('google-oauth2|')
+      ? `auth0|${auth0Id.split('|')[1]}`
+      : auth0Id;
+
     console.log('Fetching events for auth0Id:', auth0Id);
 
     const events = await CalendarEvent.find({ auth0Id });
@@ -79,7 +90,7 @@ exports.getEventById = async (req, res) => {
     console.log('Found events in DB:', events.length);
     
     if (!events || events.length === 0) {
-      return res.json({ events: [] }); // Return object with empty events array
+      return res.json([]); // Return empty array directly
     }
     
     const formattedEvents = events.map(event => ({
@@ -91,10 +102,10 @@ exports.getEventById = async (req, res) => {
       extendedProps: event.extendedProps
     }));
 
-    res.json({ events: formattedEvents }); // Return object with events array
+    res.json(formattedEvents); // Return array directly, not wrapped in object
   } catch (error) {
     console.error('Error fetching events:', error);
-    res.json({ events: [] }); // Return object with empty events array on error
+    res.json([]); // Return empty array on error
   }
 };
 

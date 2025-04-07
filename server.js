@@ -1,13 +1,17 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const connectDB = require('./services/mongodb.js');
 const corsConfig = require('./config/cors.config.js');
 const userRoutes = require('./routes/user.routes');
 const calendarRoutes = require('./routes/calendar.routes');
+const notificationRoutes = require('./routes/notifications');
 const mongoose = require('mongoose');
 const os = require('os');
+const assetsRoutes = require('./routes/assets.routes');
+const staticMiddleware = require('./middleware/static.middleware');
 
 const app = express();
 
@@ -35,12 +39,15 @@ app.use(corsConfig);
 // Handle OPTIONS preflight requests
 app.options('*', corsConfig);
 
-// Serve static files from the public directory
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
-
+// Basic middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Simplified security headers
+// Serve static files from the public directory
+app.use('/images', staticMiddleware);
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
+// Security headers
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
@@ -50,12 +57,17 @@ app.use((req, res, next) => {
     "img-src 'self' data: https:; " +
     "connect-src 'self' https://*;"
   );
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
   next();
 });
 
-// R-outes
+// Routes
 app.use('/api/users', userRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/assets', assetsRoutes); // Enable the assets routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -318,12 +330,26 @@ app.get('/status', (req, res) => {
 
 const startServer = async () => {
   try {
+    // Initialize static directories
+    const publicDir = path.join(__dirname, 'public');
+    const imagesDir = path.join(publicDir, 'images');
+    
+    // Ensure directories exist
+    [publicDir, imagesDir].forEach(dir => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    });
+
+    // Connect to database
     await connectDB();
     console.log('Database connection established');
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV}`);
+      console.log(`Static files served from: ${path.join(__dirname, 'public')}`);
     });
   } catch (err) {
     console.error('Failed to start server:', err);
@@ -331,28 +357,20 @@ const startServer = async () => {
   }
 };
 
-// Start server  
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+// Start server
 startServer();
 
 // Export the app for Vercel
 module.exports = app;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

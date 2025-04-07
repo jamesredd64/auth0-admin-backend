@@ -363,33 +363,114 @@ function Reset-ToCommit {
     }
 }
 
-# Main script loop
-do {
-    Show-GitMenu
-    $selection = Read-Host "`nSelect an option"
+function Compare-Branches {
+    # First fetch all branches from remote
+    Write-Host "Fetching latest branches from remote..."
+    git fetch --all
+
+    # Show available branches
+    Write-Host "`nAvailable branches (local and remote):"
+    git branch -a
+
+    $sourceBranch = Read-Host "`nEnter first branch name"
+    $targetBranch = Read-Host "Enter second branch name"
     
-    if ($selection -eq 'Q' -or $selection -eq 'q') {
-        break
+    # Validate branches exist
+    $sourceExists = git rev-parse --verify $sourceBranch 2>$null
+    $targetExists = git rev-parse --verify $targetBranch 2>$null
+    
+    if (-not $sourceExists -or -not $targetExists) {
+        Write-Host "`nError: One or both branches not found. Please check the branch names."
+        Write-Host "Note: For remote branches, use 'origin/branchname' format"
+        return
     }
+
+    Write-Host "`nShowing diff between ${sourceBranch} and ${targetBranch}:"
+    Write-Host "------------------------------------------------`n"
     
-    switch ($selection) {
-        '1' { Initialize-Git }
-        '2' { Add-Files }
-        '3' { Commit-Changes }
-        '4' { Push-Changes }
-        '5' { Pull-Changes }
-        '6' { Show-Status }
-        '7' { Show-Log }
-        '8' { Create-Branch }
-        '9' { Switch-Branch }
-        '10' { Merge-Branch }
-        '11' { Import-FromBackup }
-        '12' { Manage-Remotes }
-        '13' { Reset-ToCommit }
-        '14' { Manage-Stash }
-        default { 
-            Write-Host "Invalid selection"
-            Start-Sleep -Seconds 2
+    Write-Host "View options:"
+    Write-Host "1: Show only file names"
+    Write-Host "2: Show files with status (Added/Modified/Deleted)"
+    Write-Host "3: Show detailed diff"
+    
+    $viewChoice = Read-Host "`nChoose view option"
+    
+    switch ($viewChoice) {
+        '1' {
+            Write-Host "`nChanged files:"
+            git diff --name-only "${sourceBranch}..${targetBranch}"
+        }
+        '2' {
+            Write-Host "`nFiles changed with status:"
+            git diff --name-status "${sourceBranch}..${targetBranch}"
+        }
+        '3' {
+            Write-Host "`nDetailed diff:"
+            git diff "${sourceBranch}..${targetBranch}"
         }
     }
-} while ($true)
+}
+
+function Show-GitMenu {
+    Clear-Host
+    Write-Host "================ Git Operations Menu ================"
+    Write-Host "1: List all branches"
+    Write-Host "2: Switch branch"    
+    Write-Host "3: Create and switch to new branch"
+    Write-Host "4: Pull latest changes"    
+    Write-Host "5: Reset changes"
+    Write-Host "6: Stash operations"    
+    Write-Host "7: Clean working directory"
+    Write-Host "8: View status"    
+    Write-Host "9: Push changes"
+    Write-Host "10: View commit history"
+    Write-Host "11: Overwrite main with backup branch"
+    Write-Host "12: Switch Environment (Dev/Prod)"
+    Write-Host "13: Overwrite specified branch"
+    Write-Host "14: Compare branches (diff)"
+    Write-Host "Q: Quit"
+    Write-Host "=================================================="
+}
+
+# Main loop
+do {
+    Show-GitMenu
+    $selection = Read-Host "Please make a selection"
+    switch ($selection) {
+        '1' { Get-BranchList }
+        '2' { Switch-Branch }
+        '3' { New-Branch }
+        '4' { git pull }
+        '5' { Reset-Changes }
+        '6' { Invoke-StashOperations }
+        '7' { Clean-WorkingDirectory }
+        '8' { git status }
+        '9' { Push-Changes }
+        '10' {
+            Write-Host "`nAll Commits (including local):"
+            Write-Host "Format: [Hash] [Date] [Author] [Message] [Branch/HEAD info]"
+            Write-Host "--------------------------------------------------------"
+            git log --pretty=format:"%h %ad %an %s %d" --date=short --all -n 15
+            Write-Host "`n"
+            Write-Host "Local unpushed commits on current branch:"
+            Write-Host "----------------------------------------"
+            $unpushedCommits = git log '@{u}..' --pretty=format:"%h %ad %an %s" --date=short 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                $unpushedCommits = git log 'origin/main..HEAD' --pretty=format:"%h %ad %an %s" --date=short 2>$null
+            }
+            if ($LASTEXITCODE -eq 0 -and $unpushedCommits) {
+                Write-Host $unpushedCommits
+            } else {
+                Write-Host "All commits are in sync with remote repository."
+            }
+        }
+        '11' { Reset-ToBackupBranch }
+        '12' { Switch-Environment }
+        '13' { Overwrite-Branch }
+        '14' { Compare-Branches }
+    }
+    if ($selection -ne 'q') {
+        Write-Host "`nPress any key to continue..."
+        $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    }
+} while ($selection -ne 'q')

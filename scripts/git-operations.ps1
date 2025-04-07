@@ -106,21 +106,52 @@ function Commit-Changes {
 }
 
 function Push-Changes {
+    $currentBranch = git rev-parse --abbrev-ref HEAD    
+    Write-Host "Current branch: $currentBranch"
     Write-Host "1: Push to current branch"
     Write-Host "2: Push to specific branch"
     Write-Host "3: Back"
     
     $choice = Read-Host "`nEnter choice"
     switch ($choice) {
-        "1" {
-            git push
+        '1' {
+            Write-Host "`n1: Normal push"
+            Write-Host "2: Force push"
+            $pushType = Read-Host "`nChoose push type"
+            
+            switch ($pushType) {
+                '1' {
+                    git push --set-upstream origin "$currentBranch"
+                }
+                '2' {
+                    Write-Host "`nWARNING: Force push will overwrite remote changes!"
+                    $confirm = Read-Host "Continue with force push? (y/n)"
+                    if ($confirm -eq 'y') {
+                        git push --force --set-upstream origin "$currentBranch"
+                    }
+                }
+            }
         }
-        "2" {
-            $branch = Read-Host "Enter branch name"
-            git push origin $branch
+        '2' {
+            $targetBranch = Read-Host "Enter target branch name"
+            Write-Host "`n1: Normal push"
+            Write-Host "2: Force push"
+            $pushType = Read-Host "`nChoose push type"
+            
+            switch ($pushType) {
+                '1' {
+                    git push origin "${currentBranch}:${targetBranch}"
+                }
+                '2' {
+                    Write-Host "`nWARNING: Force push will overwrite remote changes!"
+                    $confirm = Read-Host "Continue with force push? (y/n)"
+                    if ($confirm -eq 'y') {
+                        git push --force origin "${currentBranch}:${targetBranch}"
+                    }
+                }
+            }
         }
     }
-    Pause
 }
 
 function Pull-Changes {

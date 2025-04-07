@@ -3,7 +3,6 @@ const cors = require('cors');
 const connectDB = require('./models/index.js');
 const calendarRoutes = require('./routes/calendar.routes');
 const userRoutes = require('./routes/user.routes.js');
-
 const app = express();
 
 // Check if we're running on Vercel

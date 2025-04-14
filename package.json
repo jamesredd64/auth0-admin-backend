@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "recreate-db": "node scripts/recreate-mongodb-schema.js",
     "dev": "cross-env node server.js",
     "build": "npm install",
     "vercel-build": "npm install",
@@ -14,7 +15,11 @@
     "git": "scripts\\git-operations.cmd",
     "git:init": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\init-git.ps1",
     "migrate:calendar": "node scripts/migrate-calendar-events.js",
-    "populate:calendar": "node scripts/populate-calendar-events.js"
+    "populate:calendar": "node scripts/populate-calendar-events.js",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "release": "standard-version",
+    "migrate:notifications": "node scripts/migrate-notifications-profile-pic.js",
+    "prepare-release": "npm run update-version && standard-version --prerelease"
   },
   "keywords": [
     "nodejs",
@@ -33,9 +38,14 @@
     "express-oauth2-jwt-bearer": "^1.6.1",
     "mongoose": "^6.13.8",
     "multer": "^1.4.5-lts.1",
+    "react-markdown": "^10.1.0",
     "sharp": "^0.32.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "conventional-changelog-angular": "^7.0.0",
+    "conventional-changelog-cli": "^4.1.0",
+    "hosted-git-info": "^7.0.0",
+    "nodemon": "^3.1.9",
+    "standard-version": "^9.5.0"
   }
 }

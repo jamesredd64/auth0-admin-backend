@@ -12,17 +12,12 @@ exports.createEvent = async (req, res) => {
       });
     }
 
-    // Convert google-oauth2| to auth0| for database storage
-    const auth0Id = req.body.auth0Id.startsWith('google-oauth2|')
-      ? `auth0|${req.body.auth0Id.split('|')[1]}`
-      : req.body.auth0Id;
-
     const eventData = {
       title: req.body.title,
       start: new Date(req.body.start),
       end: new Date(req.body.end || req.body.start),
       allDay: req.body.allDay ?? true,
-      auth0Id,
+      auth0Id: req.body.auth0Id,
       extendedProps: {
         calendar: req.body.extendedProps?.calendar || 'primary',
         description: req.body.extendedProps?.description || '',
@@ -50,13 +45,8 @@ exports.createEvent = async (req, res) => {
 
 exports.getEvents = async (req, res) => {
   try {
-    let { auth0Id } = req.params;
+    const { auth0Id } = req.params;
     
-    // Convert google-oauth2| to auth0| for database lookup
-    auth0Id = auth0Id.startsWith('google-oauth2|')
-      ? `auth0|${auth0Id.split('|')[1]}`
-      : auth0Id;
-
     console.log('Fetching events for auth0Id:', auth0Id);
 
     const events = await CalendarEvent.find({ auth0Id });

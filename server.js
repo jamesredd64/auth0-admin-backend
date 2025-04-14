@@ -15,24 +15,6 @@ const staticMiddleware = require('./middleware/static.middleware');
 
 const app = express();
 
-// Add this helper function at the top of server.js
-const getEnvironmentInfo = () => {
-  const isVercel = process.env.VERCEL === '1';
-  return {
-    isVercel,
-    environment: process.env.NODE_ENV || 'development',
-    platform: isVercel ? 'Vercel' : 'Local Development',
-    region: isVercel ? process.env.VERCEL_REGION : 'local',
-    git: isVercel ? {
-      commit: process.env.VERCEL_GIT_COMMIT_SHA,
-      branch: process.env.VERCEL_GIT_COMMIT_REF
-    } : {
-      commit: 'local',
-      branch: 'development'
-    }
-  };
-};
-
 // Apply CORS configuration BEFORE other middleware
 app.use(corsConfig);
 
@@ -66,12 +48,24 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/calendar', calendarRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use('/api/notifications', notificationRoutes); // Removed jwtCheck
 app.use('/api/assets', assetsRoutes); // Enable the assets routes
+
+// Add logging middleware for debugging
+app.use((req, res, next) => {
+  console.log('Incoming request:', {
+    method: req.method,
+    path: req.path,
+    params: req.params,
+    query: req.query,
+    body: req.body
+  });
+  next();
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).json({ 
     error: 'Something broke!',
     message: err.message 

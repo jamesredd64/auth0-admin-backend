@@ -25,6 +25,85 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  profile: {
+    dateOfBirth: {
+      type: String,
+      default: null
+    },
+    gender: {
+      type: String,
+      default: ''
+    },
+    profilePictureUrl: {
+      type: String,
+      default: ''
+    },
+    marketingBudget: {
+      adBudget: {
+        type: Number,
+        default: 0
+      },
+      costPerAcquisition: {
+        type: Number,
+        default: 0
+      },
+      dailySpendingLimit: {
+        type: Number,
+        default: 0
+      },
+      marketingChannels: {
+        type: String,
+        default: ''
+      },
+      monthlyBudget: {
+        type: Number,
+        default: 0
+      },
+      preferredPlatforms: {
+        type: String,
+        default: ''
+      },
+      notificationPreferences: {
+        type: [String],
+        default: []
+      },
+      roiTarget: {
+        type: Number,
+        default: 0
+      },
+      frequency: {
+        type: String,
+        enum: ['daily', 'monthly', 'quarterly', 'yearly'],
+        default: 'monthly'
+      }
+    }
+  },
+  address: {
+    street: {
+      type: String,
+      default: ''
+    },
+    city: {
+      type: String,
+      default: ''
+    },
+    state: {
+      type: String,
+      default: ''
+    },
+    zipCode: {
+      type: String,
+      default: ''
+    },
+    country: {
+      type: String,
+      default: ''
+    }
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   marketingBudget: {
     adBudget: {
       type: Number,
@@ -63,32 +142,6 @@ const userSchema = new mongoose.Schema({
       enum: ['daily', 'monthly', 'quarterly', 'yearly'],
       default: 'monthly'
     }
-  },
-  address: {
-    street: {
-      type: String,
-      default: ''
-    },
-    city: {
-      type: String,
-      default: ''
-    },
-    state: {
-      type: String,
-      default: ''
-    },
-    zipCode: {
-      type: String,
-      default: ''
-    },
-    country: {
-      type: String,
-      default: ''
-    }
-  },
-  isActive: {
-    type: Boolean,
-    default: true
   }
 }, {
   timestamps: true,

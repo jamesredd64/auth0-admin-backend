@@ -9,6 +9,20 @@ router.use((req, res, next) => {
   next();
 });
 
+// Get all users
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ 
+      message: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
 // Get user by auth0Id
 router.get('/:auth0Id', userController.findByAuth0Id);
 
@@ -60,17 +74,32 @@ router.put('/:auth0Id', async (req, res) => {
       { auth0Id },
       {
         $set: {
-          ...updateData,
-          'profile.marketingBudget': {
-            ...(updateData.profile?.marketingBudget || {}),
-          },
-          'address': {
-            ...(updateData.address || {}),
-          }
+          email: updateData.email,
+          firstName: updateData.firstName,
+          lastName: updateData.lastName,
+          phoneNumber: updateData.phoneNumber,
+          'profile.dateOfBirth': updateData.profile?.dateOfBirth,
+          'profile.gender': updateData.profile?.gender,
+          'profile.profilePictureUrl': updateData.profile?.profilePictureUrl,
+          'profile.marketingBudget.adBudget': updateData.profile?.marketingBudget?.adBudget,
+          'profile.marketingBudget.costPerAcquisition': updateData.profile?.marketingBudget?.costPerAcquisition,
+          'profile.marketingBudget.dailySpendingLimit': updateData.profile?.marketingBudget?.dailySpendingLimit,
+          'profile.marketingBudget.marketingChannels': updateData.profile?.marketingBudget?.marketingChannels,
+          'profile.marketingBudget.monthlyBudget': updateData.profile?.marketingBudget?.monthlyBudget,
+          'profile.marketingBudget.preferredPlatforms': updateData.profile?.marketingBudget?.preferredPlatforms,
+          'profile.marketingBudget.notificationPreferences': updateData.profile?.marketingBudget?.notificationPreferences,
+          'profile.marketingBudget.roiTarget': updateData.profile?.marketingBudget?.roiTarget,
+          'profile.marketingBudget.frequency': updateData.profile?.marketingBudget?.frequency,
+          'address.street': updateData.address?.street,
+          'address.city': updateData.address?.city,
+          'address.state': updateData.address?.state,
+          'address.zipCode': updateData.address?.zipCode,
+          'address.country': updateData.address?.country,
+          isActive: updateData.isActive
         }
       },
       { 
-        new: true, // Return the updated document
+        new: true,
         runValidators: true
       }
     );
@@ -85,8 +114,8 @@ router.put('/:auth0Id', async (req, res) => {
   } catch (err) {
     console.error('Error updating user:', err);
     res.status(500).json({ 
-      message: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      message: 'Error updating user',
+      error: err.message
     });
   }
 });

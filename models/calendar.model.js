@@ -6,9 +6,10 @@ const calendarEventSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: function(v) {
-        return v.startsWith('auth0|');
+        // Accept any Auth0 ID format (auth0|, google-oauth2|, etc.)
+        return v.includes('|');
       },
-      message: props => `${props.value} must start with "auth0|"`
+      message: props => `${props.value} must be a valid Auth0 ID`
     }
   },
   title: {
@@ -22,14 +23,6 @@ const calendarEventSchema = new mongoose.Schema({
   end: {
     type: Date,
     required: true
-  },
-  startTime: {
-    type: String,
-    default: '00:00'
-  },
-  endTime: {
-    type: String,
-    default: '23:59'
   },
   allDay: {
     type: Boolean,

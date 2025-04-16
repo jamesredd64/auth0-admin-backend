@@ -1,162 +1,128 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-console.log('Defining User model schema...');
+console.log("Defining User model schema...");
 
 const userSchema = new mongoose.Schema({
   auth0Id: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   firstName: {
     type: String,
-    default: ''
+    default: "",
   },
   lastName: {
     type: String,
-    default: ''
+    default: "",
   },
   phoneNumber: {
     type: String,
-    default: ''
+    default: "",
   },
   profile: {
     dateOfBirth: {
       type: String,
-      default: null
+      default: null,
     },
     gender: {
       type: String,
-      default: ''
+      default: "",
     },
     profilePictureUrl: {
       type: String,
-      default: ''
+      default: "",
     },
-    marketingBudget: {
-      adBudget: {
-        type: Number,
-        default: 0
-      },
-      costPerAcquisition: {
-        type: Number,
-        default: 0
-      },
-      dailySpendingLimit: {
-        type: Number,
-        default: 0
-      },
-      marketingChannels: {
-        type: String,
-        default: ''
-      },
-      monthlyBudget: {
-        type: Number,
-        default: 0
-      },
-      preferredPlatforms: {
-        type: String,
-        default: ''
-      },
-      notificationPreferences: {
-        type: [String],
-        default: []
-      },
-      roiTarget: {
-        type: Number,
-        default: 0
-      },
-      frequency: {
-        type: String,
-        enum: ['daily', 'monthly', 'quarterly', 'yearly'],
-        default: 'monthly'
-      }
-    }
-  },
-  address: {
-    street: {
+    role: {
       type: String,
-      default: ''
+      enum: ["admin", "user", "manager", "super-admin"],
+      default: "user",
+      required: false,
     },
-    city: {
-      type: String,
-      default: ''
-    },
-    state: {
-      type: String,
-      default: ''
-    },
-    zipCode: {
-      type: String,
-      default: ''
-    },
-    country: {
-      type: String,
-      default: ''
-    }
-  },
-  isActive: {
-    type: Boolean,
-    default: true
   },
   marketingBudget: {
     adBudget: {
       type: Number,
-      default: 0
+      default: 0,
     },
     costPerAcquisition: {
       type: Number,
-      default: 0
+      default: 0,
     },
     dailySpendingLimit: {
       type: Number,
-      default: 0
+      default: 0,
     },
     marketingChannels: {
       type: String,
-      default: ''
+      default: "",
     },
     monthlyBudget: {
       type: Number,
-      default: 0
+      default: 0,
     },
     preferredPlatforms: {
       type: String,
-      default: ''
+      default: "",
     },
     notificationPreferences: {
       type: [String],
-      default: []
+      default: [],
     },
     roiTarget: {
       type: Number,
-      default: 0
+      default: 0,
     },
     frequency: {
       type: String,
-      enum: ['daily', 'monthly', 'quarterly', 'yearly'],
-      default: 'monthly'
-    }
+      enum: ["daily", "monthly", "quarterly", "yearly"],
+      default: "monthly",
+    },
+  },
+  address: {
+    street: {
+      type: String,
+      default: "",
+    },
+    city: {
+      type: String,
+      default: "",
+    },
+    state: {
+      type: String,
+      default: "",
+    },
+    zipCode: {
+      type: String,
+      default: "",
+    },
+    country: {
+      type: String,
+      default: "",
+    },
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   }
 }, {
   timestamps: true,
-  collection: 'users'
+  collection: "users",
 });
 
 // Add any pre/post hooks if needed
-userSchema.pre('save', function(next) {
-  console.log('Pre-save hook triggered for user:', this.auth0Id);
+userSchema.pre("save", function (next) {
+  console.log("Pre-save hook triggered for user:", this.auth0Id);
   next();
 });
 
 // Create and export the model
-const User = mongoose.model('User', userSchema);
-console.log('User model compiled successfully');
+const User = mongoose.model("User", userSchema);
+console.log("User model compiled successfully");
 
 module.exports = User;
-

@@ -78,24 +78,32 @@ router.put('/:auth0Id', async (req, res) => {
           firstName: updateData.firstName,
           lastName: updateData.lastName,
           phoneNumber: updateData.phoneNumber,
-          'profile.dateOfBirth': updateData.profile?.dateOfBirth,
-          'profile.gender': updateData.profile?.gender,
-          'profile.profilePictureUrl': updateData.profile?.profilePictureUrl,
-          'profile.marketingBudget.adBudget': updateData.profile?.marketingBudget?.adBudget,
-          'profile.marketingBudget.costPerAcquisition': updateData.profile?.marketingBudget?.costPerAcquisition,
-          'profile.marketingBudget.dailySpendingLimit': updateData.profile?.marketingBudget?.dailySpendingLimit,
-          'profile.marketingBudget.marketingChannels': updateData.profile?.marketingBudget?.marketingChannels,
-          'profile.marketingBudget.monthlyBudget': updateData.profile?.marketingBudget?.monthlyBudget,
-          'profile.marketingBudget.preferredPlatforms': updateData.profile?.marketingBudget?.preferredPlatforms,
-          'profile.marketingBudget.notificationPreferences': updateData.profile?.marketingBudget?.notificationPreferences,
-          'profile.marketingBudget.roiTarget': updateData.profile?.marketingBudget?.roiTarget,
-          'profile.marketingBudget.frequency': updateData.profile?.marketingBudget?.frequency,
-          'address.street': updateData.address?.street,
-          'address.city': updateData.address?.city,
-          'address.state': updateData.address?.state,
-          'address.zipCode': updateData.address?.zipCode,
-          'address.country': updateData.address?.country,
-          isActive: updateData.isActive
+          
+          // Profile fields
+          "profile.dateOfBirth": updateData.profile?.dateOfBirth ?? null,
+          "profile.gender": updateData.profile?.gender ?? "",
+          "profile.profilePictureUrl": updateData.profile?.profilePictureUrl ?? "",
+          "profile.role": updateData.profile?.role ?? "user",
+          
+          // Marketing Budget fields (at root level)
+          "marketingBudget.adBudget": updateData.marketingBudget?.adBudget ?? 0,
+          "marketingBudget.costPerAcquisition": updateData.marketingBudget?.costPerAcquisition ?? 0,
+          "marketingBudget.dailySpendingLimit": updateData.marketingBudget?.dailySpendingLimit ?? 0,
+          "marketingBudget.marketingChannels": updateData.marketingBudget?.marketingChannels ?? "",
+          "marketingBudget.monthlyBudget": updateData.marketingBudget?.monthlyBudget ?? 0,
+          "marketingBudget.preferredPlatforms": updateData.marketingBudget?.preferredPlatforms ?? "",
+          "marketingBudget.notificationPreferences": updateData.marketingBudget?.notificationPreferences ?? [],
+          "marketingBudget.roiTarget": updateData.marketingBudget?.roiTarget ?? 0,
+          "marketingBudget.frequency": updateData.marketingBudget?.frequency ?? "monthly",
+          
+          // Address fields
+          "address.street": updateData.address?.street ?? "",
+          "address.city": updateData.address?.city ?? "",
+          "address.state": updateData.address?.state ?? "",
+          "address.zipCode": updateData.address?.zipCode ?? "",
+          "address.country": updateData.address?.country ?? "",
+          
+          isActive: updateData.isActive ?? true
         }
       },
       { 
@@ -120,7 +128,7 @@ router.put('/:auth0Id', async (req, res) => {
   }
 });
 
-// Add this new route
+// Save user data
 router.put('/:auth0Id/save', userController.saveUserData);
 
 module.exports = router;

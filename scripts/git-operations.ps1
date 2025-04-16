@@ -1,395 +1,436 @@
-# In your backup repository
-# 1. Get the commit hashes you want to transfer
-git log --oneline
-
-# 2. Copy those hashes, then switch to your main repository
-cd path/to/main/repo
-
-# 3. Create a new branch for the changes
-git checkout -b import-backup
-
-# 4. Cherry-pick the commits you want
-# Usage: git cherry-pick [hash1] [hash2]
-git cherry-pick $args[0] $args[1]
-
-# 5. Push the changes to your main repository
-git push origin import-backup
-
-function Import-FromBackup {
-    Write-Host "Import changes from backup repository"
-    Write-Host "1: Add main repository as remote"
-    Write-Host "2: Push current branch to main repository"
-    Write-Host "3: Cherry-pick specific commits"
-    Write-Host "4: Back"
-    
-    $importChoice = Read-Host "Choose import method"
-    switch ($importChoice) {
-        '1' {
-            $mainRepoUrl = Read-Host "Enter main repository URL"
-            git remote add main $mainRepoUrl
-            Write-Host "Main repository added as remote"
-        }
-        '2' {
-            $branchName = git rev-parse --abbrev-ref HEAD
-            $targetBranch = Read-Host "Enter target branch name for main repository"
-            git push main "${branchName}:${targetBranch}"
-        }
-        '3' {
-            Write-Host "Recent commits:"
-            git log --oneline -n 10
-            $commits = Read-Host "Enter commit hashes to cherry-pick (space-separated)"
-            $commits.Split(' ') | ForEach-Object {
-                git cherry-pick $_
-            }
-        }
-    }
-    Pause
-}
-
-function Show-GitMenu {
+function Show-GitMenu {    
     Clear-Host
-    Write-Host "================ Git Operations Menu ================"
-    Write-Host "1: Initialize Git repository"
-    Write-Host "2: Add files to staging"
-    Write-Host "3: Commit changes"
-    Write-Host "4: Push changes"
-    Write-Host "5: Pull changes"
-    Write-Host "6: View status"
-    Write-Host "7: View log"
-    Write-Host "8: Create branch"
-    Write-Host "9: Switch branch"
-    Write-Host "10: Merge branch"
-    Write-Host "11: Import from backup repository"
-    Write-Host "12: View/manage remotes"
-    Write-Host "13: Reset to a specific commit"
-    Write-Host "14: Stash operations"
+    Write-Host "================ Git Operations Menu ================"    
+    Write-Host "1: List all branches"
+    Write-Host "2: Switch branch"    
+    Write-Host "3: Create and switch to new branch"
+    Write-Host "4: Pull latest changes"    
+    Write-Host "5: Reset changes"
+    Write-Host "6: Stash operations"    
+    Write-Host "7: Clean working directory"
+    Write-Host "8: View status"    
+    Write-Host "9: Push changes"
+    Write-Host "10: View commit history"
+    Write-Host "11: Overwrite main with backup branch"
+    Write-Host "12: Switch Environment (Dev/Prod)"
+    Write-Host "13: Delete branch"
+    Write-Host "15: Merge multiple branches into new branch"
     Write-Host "Q: Quit"
     Write-Host "=================================================="
 }
 
-function Initialize-Git {
-    git init
-    Write-Host "Git repository initialized"
-    Pause
+function Get-BranchList {
+    Write-Host "`nLocal branches:"    
+    git branch
+    Write-Host "`nRemote branches:"    
+    git branch -r
 }
 
-function Add-Files {
-    Write-Host "Current status:"
-    git status
-    Write-Host "`nOptions:"
-    Write-Host "1: Add specific file"
-    Write-Host "2: Add all files"
-    Write-Host "3: Back"
+function Switch-Branch {    
+    Get-BranchList
+    $branchName = Read-Host "`nEnter branch name to switch to"    
+    git checkout $branchName
+}
+
+function New-Branch {    
+    $branchName = Read-Host "Enter new branch name"
+    git checkout -b $branchName    
+    $pushBranch = Read-Host "Do you want to push this branch to remote? (y/n)"
+    if ($pushBranch -eq 'y') {        
+        git push -u origin $branchName
+    }
+}
+
+function Reset-Changes {
+    Write-Host "Reset options:"    
+    Write-Host "1: Soft reset (keep changes in working directory)"
+    Write-Host "2: Hard reset (delete all changes)"    
+    Write-Host "3: Reset to specific commit"
+    Write-Host "4: Cancel"    
+    $resetChoice = Read-Host "Choose reset type"    
+    switch ($resetChoice) {
+        '1' {            
+            git reset --soft HEAD~1
+            Write-Host "Soft reset completed. Changes are in working directory."        
+        }
+        '2' {            
+            $confirm = Read-Host "WARNING: This will delete all changes. Continue? (y/n)"
+            if ($confirm -eq 'y') {                
+                git reset --hard HEAD
+                Write-Host "Hard reset completed. All changes deleted."            
+            }
+        }        
+        '3' {
+            git log --oneline -n 10            
+            $commitHash = Read-Host "Enter commit hash to reset to"
+            $confirm = Read-Host "Reset to $commitHash? (y/n)"            
+            if ($confirm -eq 'y') {
+                # First check if there are uncommitted changes
+                $status = git status --porcelain
+                if ($status) {
+                    Write-Host "You have uncommitted changes. Please commit or stash them first."
+                    Write-Host "Would you like to:"
+                    Write-Host "1: Stash changes"
+                    Write-Host "2: Force reset (lose changes)"
+                    Write-Host "3: Cancel"
+                    $choice = Read-Host "Choose option"
+                    
+                    switch ($choice) {
+                        '1' {
+                            git stash
+                            git reset --hard $commitHash
+                            Write-Host "Changes stashed and reset to $commitHash. Use 'git stash pop' to recover changes."
+                        }
+                        '2' {
+                            git reset --hard $commitHash
+                            git clean -fd
+                            Write-Host "Force reset to $commitHash. All changes deleted."
+                        }
+                        default {
+                            Write-Host "Reset cancelled"
+                            return
+                        }
+                    }
+                } else {
+                    git reset --hard $commitHash
+                    git clean -fd
+                    Write-Host "Reset to $commitHash completed."
+                }
+            }
+        }    
+    }
+}
+
+function Invoke-StashOperations {    
+    Write-Host "Stash options:"
+    Write-Host "1: Stash current changes"    
+    Write-Host "2: List stashes"
+    Write-Host "3: Apply stash"    
+    Write-Host "4: Pop latest stash"
+    Write-Host "5: Drop stash"    
+    Write-Host "6: Cancel"
     
-    $choice = Read-Host "`nEnter choice"
-    switch ($choice) {
-        "1" {
-            $file = Read-Host "Enter file path"
-            git add $file
-        }
-        "2" {
-            git add .
-        }
+    $stashChoice = Read-Host "Choose stash operation"
+    switch ($stashChoice) {        
+        '1' {
+            $stashName = Read-Host "Enter stash description (optional)"            
+            if ($stashName) {
+                git stash push -m $stashName            
+            } else {
+                git stash            
+            }
+        }        
+        '2' { git stash list }
+        '3' { 
+            git stash list
+            $stashIndex = Read-Host "Enter stash index to apply"
+            # Fix: Properly format the stash reference
+            $stashRef = "stash@{$stashIndex}"
+            & git stash apply "$stashRef"
+        }        
+        '4' { git stash pop }
+        '5' {            
+            git stash list
+            $stashIndex = Read-Host "Enter stash index to drop"            
+            $stashRef = "stash@{$stashIndex}"
+            & git stash drop "$stashRef"
+        }    
     }
-    Write-Host "Files added to staging"
-    Pause
 }
 
-function Commit-Changes {
-    Write-Host "Current staged files:"
-    git status
-    $message = Read-Host "`nEnter commit message"
-    if (![string]::IsNullOrWhiteSpace($message)) {
-        git commit -m $message
+function Clean-WorkingDirectory {    
+    Write-Host "Clean options:"
+    Write-Host "1: Show what would be deleted"    
+    Write-Host "2: Delete untracked files"
+    Write-Host "3: Delete untracked files and directories"    
+    Write-Host "4: Cancel"
+    
+    $cleanChoice = Read-Host "Choose clean type"
+    switch ($cleanChoice) {        
+        '1' { git clean -n }
+        '2' {            
+            $confirm = Read-Host "This will delete all untracked files. Continue? (y/n)"
+            if ($confirm -eq 'y') { git clean -f }        
+        }
+        '3' {            
+            $confirm = Read-Host "This will delete all untracked files and directories. Continue? (y/n)"
+            if ($confirm -eq 'y') { git clean -fd }        
+        }
     }
-    Pause
 }
 
 function Push-Changes {
-    Write-Host "1: Push to current branch"
-    Write-Host "2: Push to specific branch"
-    Write-Host "3: Back"
+    $currentBranch = git rev-parse --abbrev-ref HEAD    
+    Write-Host "Current branch: $currentBranch"
+    $confirm = Read-Host "Push to this branch? (y/n)"    
+    if ($confirm -eq 'y') {
+        git push origin "$currentBranch"    
+    } else {
+        $targetBranch = Read-Host "Enter target branch name"        
+        $pushCommand = "origin ${currentBranch}:${targetBranch}"
+        git push $pushCommand
+    }
+}
+
+function Reset-ToBackupBranch {
+    $backupBranch = Read-Host "Enter the name of your backup branch"
     
-    $choice = Read-Host "`nEnter choice"
-    switch ($choice) {
-        "1" {
-            git push
-        }
-        "2" {
-            $branch = Read-Host "Enter branch name"
-            git push origin $branch
-        }
-    }
-    Pause
-}
-
-function Pull-Changes {
-    Write-Host "1: Pull from current branch"
-    Write-Host "2: Pull from specific branch"
-    Write-Host "3: Back"
+    Write-Host "`nThis will completely overwrite main branch with $backupBranch"
+    Write-Host "WARNING: This operation cannot be undone!"
+    $confirm = Read-Host "Are you sure you want to continue? (y/n)"
     
-    $choice = Read-Host "`nEnter choice"
-    switch ($choice) {
-        "1" {
-            git pull
-        }
-        "2" {
-            $branch = Read-Host "Enter branch name"
-            git pull origin $branch
-        }
-    }
-    Pause
-}
-
-function Show-Status {
-    git status
-    Pause
-}
-
-function Show-Log {
-    Write-Host "1: Show recent commits"
-    Write-Host "2: Show detailed log"
-    Write-Host "3: Back"
-    
-    $choice = Read-Host "`nEnter choice"
-    switch ($choice) {
-        "1" {
-            git log --oneline -n 10
-        }
-        "2" {
-            git log
-        }
-    }
-    Pause
-}
-
-function Create-Branch {
-    $branch = Read-Host "Enter new branch name"
-    if (![string]::IsNullOrWhiteSpace($branch)) {
-        git checkout -b $branch
-    }
-    Pause
-}
-
-function Switch-Branch {
-    Write-Host "Available branches:"
-    git branch
-    $branch = Read-Host "`nEnter branch name to switch to"
-    if (![string]::IsNullOrWhiteSpace($branch)) {
-        git checkout $branch
-    }
-    Pause
-}
-
-function Merge-Branch {
-    Write-Host "Available branches:"
-    git branch
-    $branch = Read-Host "`nEnter branch name to merge from"
-    if (![string]::IsNullOrWhiteSpace($branch)) {
-        git merge $branch
-    }
-    Pause
-}
-
-function Manage-Remotes {
-    Write-Host "1: List remotes"
-    Write-Host "2: Add remote"
-    Write-Host "3: Remove remote"
-    Write-Host "4: Back"
-    
-    $choice = Read-Host "`nEnter choice"
-    switch ($choice) {
-        "1" {
-            git remote -v
-        }
-        "2" {
-            $name = Read-Host "Enter remote name"
-            $url = Read-Host "Enter remote URL"
-            git remote add $name $url
-        }
-        "3" {
-            git remote -v
-            $name = Read-Host "`nEnter remote name to remove"
-            git remote remove $name
-        }
-    }
-    Pause
-}
-
-function Manage-Stash {
-    Write-Host "1: Stash changes"
-    Write-Host "2: List stashes"
-    Write-Host "3: Apply stash"
-    Write-Host "4: Drop stash"
-    Write-Host "5: Back"
-    
-    $choice = Read-Host "`nEnter choice"
-    switch ($choice) {
-        "1" {
-            $message = Read-Host "Enter stash message (optional)"
-            if ([string]::IsNullOrWhiteSpace($message)) {
-                git stash
-            } else {
-                git stash push -m $message
-            }
-        }
-        "2" {
-            git stash list
-        }
-        "3" {
-            git stash list
-            $index = Read-Host "`nEnter stash index to apply"
-            git stash apply stash@{$index}
-        }
-        "4" {
-            git stash list
-            $index = Read-Host "`nEnter stash index to drop"
-            git stash drop stash@{$index}
-        }
-    }
-    Pause
-}
-
-function Reset-ToCommit {
-    while ($true) {
-        Clear-Host
-        Write-Host "================ Reset to Commit ================"
-        Write-Host "1: View recent commits"
-        Write-Host "2: View reflog"
-        Write-Host "3: Return to main menu"
-        Write-Host "================================================"
-        
-        $choice = Read-Host "`nEnter your choice"
-        
-        switch ($choice) {
-            "1" {
-                Clear-Host
-                Write-Host "How many commits to show?"
-                Write-Host "1: Last 15 commits"
-                Write-Host "2: Last 30 commits"
-                Write-Host "3: Last 50 commits"
-                Write-Host "4: Custom number"
-                Write-Host "5: Back"
-                
-                $countChoice = Read-Host "`nEnter your choice"
-                if ($countChoice -eq "5") { continue }
-                
-                $commitCount = switch ($countChoice) {
-                    "1" { 15 }
-                    "2" { 30 }
-                    "3" { 50 }
-                    "4" { 
-                        Read-Host "Enter number of commits to show"
-                    }
-                    default { 30 }
+    if ($confirm -eq 'y') {
+        # First check if there are uncommitted changes
+        $status = git status --porcelain
+        if ($status) {
+            Write-Host "You have uncommitted changes. Please commit or stash them first."
+            Write-Host "Would you like to:"
+            Write-Host "1: Stash changes"
+            Write-Host "2: Force reset (lose changes)"
+            Write-Host "3: Cancel"
+            $choice = Read-Host "Choose option"
+            
+            switch ($choice) {
+                '1' {
+                    git stash
                 }
-                
-                Clear-Host
-                Write-Host "Last $commitCount commits:`n"
-                git log --oneline -n $commitCount
-                Write-Host "`nPress Enter to continue..."
-                Read-Host
-            }
-            "2" {
-                Clear-Host
-                Write-Host "Reflog entries:`n"
-                git reflog --date=iso
-                Write-Host "`nPress Enter to continue..."
-                Read-Host
-            }
-            "3" {
-                return
-            }
-            default {
-                Write-Host "Invalid choice. Press Enter to continue..."
-                Read-Host
-                continue
-            }
-        }
-
-        $doReset = Read-Host "`nDo you want to reset to a commit? (y/N)"
-        if ($doReset -ne "y") { continue }
-
-        Write-Host "`nReset types:"
-        Write-Host "1: Soft  - Keep changes staged"
-        Write-Host "2: Mixed - Keep changes unstaged"
-        Write-Host "3: Hard  - Discard all changes (WARNING: destroys local changes)"
-        Write-Host "4: Cancel"
-        
-        $resetType = Read-Host "`nChoose reset type"
-        if ($resetType -eq "4") { continue }
-        
-        $commitHash = Read-Host "`nEnter commit hash to reset to (or 'q' to cancel)"
-        if ($commitHash -eq 'q' -or [string]::IsNullOrWhiteSpace($commitHash)) {
-            Write-Host "Reset cancelled"
-            Start-Sleep -Seconds 2
-            continue
-        }
-        
-        $resetFlag = switch ($resetType) {
-            "1" { "--soft" }
-            "2" { "--mixed" }
-            "3" { "--hard" }
-            default { 
-                Write-Host "Invalid choice"
-                Start-Sleep -Seconds 2
-                continue
+                '2' {
+                    git reset --hard HEAD
+                    git clean -fd
+                }
+                default {
+                    Write-Host "Operation cancelled"
+                    return
+                }
             }
         }
         
-        if ($resetType -eq "3") {
-            $confirm = Read-Host "WARNING: This will permanently delete all changes after commit $commitHash. Continue? (y/N)"
-            if ($confirm -ne "y") {
-                Write-Host "Reset cancelled"
-                Start-Sleep -Seconds 2
-                continue
-            }
-        }
+        # Perform the branch overwrite
+        git checkout main
+        git reset --hard $backupBranch
+        git push --force origin main
         
-        Write-Host "`nExecuting: git reset $resetFlag $commitHash"
-        git reset $resetFlag $commitHash
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "Reset to commit $commitHash completed successfully"
-        } else {
-            Write-Host "Error during reset operation"
-        }
-        
-        Write-Host "`nCurrent status:"
-        git status
-        
-        Write-Host "`nPress Enter to return to reset menu..."
-        Read-Host
+        Write-Host "`nMain branch has been successfully overwritten with $backupBranch"
+    } else {
+        Write-Host "Operation cancelled"
     }
 }
 
-# Main script loop
+function Switch-Environment {
+    Write-Host "`nSwitch between development and production environments"
+    Write-Host "1: Switch to development"
+    Write-Host "2: Switch to production (Vercel-ready)"
+    
+    $choice = Read-Host "Choose option"
+    
+    switch ($choice) {
+        '1' {
+            git checkout development
+            Write-Host "Switched to development environment"
+        }
+        '2' {
+            $confirm = Read-Host "This will switch to production-ready main branch. Continue? (y/n)"
+            if ($confirm -eq 'y') {
+                git checkout main
+                Write-Host "Switched to production environment"
+            }
+        }
+    }
+}
+
+function Delete-Branch {
+    Write-Host "`nCurrent branch:"
+    $currentBranch = git rev-parse --abbrev-ref HEAD
+    Write-Host $currentBranch
+    
+    Write-Host "`nAvailable branches:"
+    Get-BranchList
+    
+    $branchName = Read-Host "`nEnter branch name to delete"
+    
+    if ($branchName -eq $currentBranch) {
+        Write-Host "Cannot delete the current branch. Please switch to a different branch first."
+        return
+    }
+    
+    Write-Host "`nDelete options:"
+    Write-Host "1: Safe delete (only if branch is fully merged)"
+    Write-Host "2: Force delete (WARNING: will delete even if not merged)"
+    Write-Host "3: Cancel"
+    
+    $choice = Read-Host "Choose option"
+    
+    switch ($choice) {
+        '1' {
+            git branch -d $branchName
+            if ($LASTEXITCODE -eq 0) {
+                $deleteRemote = Read-Host "Branch deleted locally. Delete from remote too? (y/n)"
+                if ($deleteRemote -eq 'y') {
+                    git push origin --delete $branchName
+                }
+            }
+        }
+        '2' {
+            Write-Host "WARNING: Force delete will remove the branch and all its unmerged changes"
+            $confirm = Read-Host "Are you sure? (y/n)"
+            if ($confirm -eq 'y') {
+                git branch -D $branchName
+                if ($LASTEXITCODE -eq 0) {
+                    $deleteRemote = Read-Host "Branch deleted locally. Force delete from remote too? (y/n)"
+                    if ($deleteRemote -eq 'y') {
+                        git push origin --delete $branchName -f
+                    }
+                }
+            }
+        }
+        default {
+            Write-Host "Operation cancelled"
+        }
+    }
+}
+
+function Merge-MultipleBranches {
+    # First, ensure we're up to date
+    git fetch --all
+    
+    # Get current branch name for reference
+    $currentBranch = git rev-parse --abbrev-ref HEAD
+    Write-Host "`nCurrent branch: $currentBranch"
+    
+    # Show available branches
+    Write-Host "`nAvailable branches:"
+    git branch
+    
+    # Ask whether to use existing branch or create new one
+    Write-Host "`nBranch Options:"
+    Write-Host "1: Create new integration branch"
+    Write-Host "2: Use existing branch"
+    $branchChoice = Read-Host "Choose option"
+    
+    $newBranchName = ""
+    switch ($branchChoice) {
+        '1' {
+            $newBranchName = Read-Host "Enter name for new integration branch"
+            git checkout -b $newBranchName
+        }
+        '2' {
+            $newBranchName = Read-Host "Enter name of existing branch"
+            # Check if branch exists
+            $branchExists = git show-ref --verify --quiet "refs/heads/$newBranchName"
+            if ($LASTEXITCODE -eq 0) {
+                git checkout $newBranchName
+            } else {
+                Write-Host "Branch '$newBranchName' does not exist. Creating new branch..."
+                git checkout -b $newBranchName
+            }
+        }
+    }
+    
+    # Get branches to merge
+    $branchesToMerge = @()
+    do {
+        $branchName = Read-Host "`nEnter branch name to merge (or press Enter to finish)"
+        if ($branchName) {
+            $branchesToMerge += $branchName
+        }
+    } while ($branchName)
+    
+    # Merge each branch
+    foreach ($branch in $branchesToMerge) {
+        Write-Host "`nAttempting to merge $branch..."
+        $mergeResult = git merge $branch --no-commit --no-ff 2>&1
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "`nConflicts detected in $branch. Options:"
+            Write-Host "1: View conflicts"
+            Write-Host "2: Abort merge"
+            Write-Host "3: Resolve manually"
+            Write-Host "4: Force merge (theirs)"
+            Write-Host "5: Force merge (ours)"
+            $choice = Read-Host "Choose option"
+            
+            switch ($choice) {
+                '1' {
+                    git status
+                    Write-Host "`nConflict files:"
+                    git diff --name-only --diff-filter=U
+                    git merge --abort
+                }
+                '2' {
+                    git merge --abort
+                    Write-Host "Merge aborted"
+                }
+                '3' {
+                    Write-Host "Please resolve conflicts manually, then:"
+                    Write-Host "1. git add . "
+                    Write-Host "2. git commit -m 'Merge $branch into $newBranchName'"
+                }
+                '4' {
+                    # Force merge using their changes
+                    git merge --abort
+                    git merge -X theirs $branch --no-edit
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Host "Force merge failed. Trying alternative method..."
+                        git merge --abort
+                        git merge $branch -s recursive -X theirs --no-edit
+                    }
+                }
+                '5' {
+                    # Force merge using our changes
+                    git merge --abort
+                    git merge -X ours $branch --no-edit
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Host "Force merge failed. Trying alternative method..."
+                        git merge --abort
+                        git merge $branch -s recursive -X ours --no-edit
+                    }
+                }
+            }
+        } else {
+            $commitMessage = Read-Host "Enter commit message for merging $branch"
+            if (-not $commitMessage) {
+                $commitMessage = "Merge $branch into $newBranchName"
+            }
+            git commit -m $commitMessage
+        }
+    }
+    
+    Write-Host "`nMerge process completed. Branch '$newBranchName' contains merged changes."
+    Write-Host "You can review changes and push to remote when ready."
+    
+    $pushNow = Read-Host "Would you like to push this branch to remote? (y/n)"
+    if ($pushNow -eq 'y') {
+        git push -u origin $newBranchName
+    }
+}
+
+# Main loop
 do {
     Show-GitMenu
-    $selection = Read-Host "`nSelect an option"
-    
-    if ($selection -eq 'Q' -or $selection -eq 'q') {
-        break
-    }
-    
+    $selection = Read-Host "Please make a selection"
     switch ($selection) {
-        '1' { Initialize-Git }
-        '2' { Add-Files }
-        '3' { Commit-Changes }
-        '4' { Push-Changes }
-        '5' { Pull-Changes }
-        '6' { Show-Status }
-        '7' { Show-Log }
-        '8' { Create-Branch }
-        '9' { Switch-Branch }
-        '10' { Merge-Branch }
-        '11' { Import-FromBackup }
-        '12' { Manage-Remotes }
-        '13' { Reset-ToCommit }
-        '14' { Manage-Stash }
-        default { 
-            Write-Host "Invalid selection"
-            Start-Sleep -Seconds 2
+        '1' { Get-BranchList }
+        '2' { Switch-Branch }
+        '3' { New-Branch }
+        '4' { git pull }
+        '5' { Reset-Changes }
+        '6' { Invoke-StashOperations }
+        '7' { Clean-WorkingDirectory }
+        '8' { git status }
+        '9' { Push-Changes }
+        '10' { 
+            Write-Host "`nAll Commits (including local):"
+            Write-Host "Format: [Hash] [Date] [Author] [Message] [Branch/HEAD info]"
+            Write-Host "--------------------------------------------------------"
+            git log --pretty=format:"%h %ad %an %s %d" --date=short --all -n 15
         }
+        '11' { Reset-ToBackupBranch }
+        '12' { Switch-Environment }
+        '13' { Delete-Branch }
+        '15' { Merge-MultipleBranches }
     }
-} while ($true)
+    if ($selection -ne 'q') {
+        Write-Host "`nPress any key to continue..."
+        $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    }
+} while ($selection -ne 'q')

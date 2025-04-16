@@ -142,33 +142,33 @@ exports.update = async (req, res) => {
         lastName: updateData.lastName || existingUser.lastName,
         phoneNumber: updateData.phoneNumber || existingUser.phoneNumber,
         email: updateData.email || existingUser.email,
-        "profile.marketingBudget.frequency":
-          updateData.profile?.marketingBudget?.frequency ||
-          existingUser.profile?.marketingBudget?.frequency,
-        "profile.marketingBudget.adBudget":
-          updateData.profile?.marketingBudget?.adBudget ||
-          existingUser.profile?.marketingBudget?.adBudget,
-        "profile.marketingBudget.costPerAcquisition":
-          updateData.profile?.marketingBudget?.costPerAcquisition ||
-          existingUser.profile?.marketingBudget?.costPerAcquisition,
-        "profile.marketingBudget.dailySpendingLimit":
-          updateData.profile?.marketingBudget?.dailySpendingLimit ||
-          existingUser.profile?.marketingBudget?.dailySpendingLimit,
-        "profile.marketingBudget.monthlyBudget":
-          updateData.profile?.marketingBudget?.monthlyBudget ||
-          existingUser.profile?.marketingBudget?.monthlyBudget,
-        "profile.marketingBudget.roiTarget":
-          updateData.profile?.marketingBudget?.roiTarget ||
-          existingUser.profile?.marketingBudget?.roiTarget,
-        "profile.marketingBudget.marketingChannels":
-          updateData.profile?.marketingBudget?.marketingChannels ||
-          existingUser.profile?.marketingBudget?.marketingChannels,
-        "profile.marketingBudget.preferredPlatforms":
-          updateData.profile?.marketingBudget?.preferredPlatforms ||
-          existingUser.profile?.marketingBudget?.preferredPlatforms,
-        "profile.marketingBudget.notificationPreferences":
-          updateData.profile?.marketingBudget?.notificationPreferences ||
-          existingUser.profile?.marketingBudget?.notificationPreferences,
+        "marketingBudget.frequency":
+          updateData.marketingBudget?.frequency ||
+          existingUser.marketingBudget?.frequency,
+        "marketingBudget.adBudget":
+          updateData.marketingBudget?.adBudget ||
+          existingUser.marketingBudget?.adBudget,
+        "marketingBudget.costPerAcquisition":
+          updateData.marketingBudget?.costPerAcquisition ||
+          existingUser.marketingBudget?.costPerAcquisition,
+        "marketingBudget.dailySpendingLimit":
+          updateData.marketingBudget?.dailySpendingLimit ||
+          existingUser.marketingBudget?.dailySpendingLimit,
+        "marketingBudget.monthlyBudget":
+          updateData.marketingBudget?.monthlyBudget ||
+          existingUser.marketingBudget?.monthlyBudget,
+        "marketingBudget.roiTarget":
+          updateData.marketingBudget?.roiTarget ||
+          existingUser.marketingBudget?.roiTarget,
+        "marketingBudget.marketingChannels":
+          updateData.marketingBudget?.marketingChannels ||
+          existingUser.marketingBudget?.marketingChannels,
+        "marketingBudget.preferredPlatforms":
+          updateData.marketingBudget?.preferredPlatforms ||
+          existingUser.marketingBudget?.preferredPlatforms,
+        "marketingBudget.notificationPreferences":
+          updateData.marketingBudget?.notificationPreferences ||
+          existingUser.marketingBudget?.notificationPreferences,
         "address.street":
           updateData.address?.street || existingUser.address?.street,
         "address.city": updateData.address?.city || existingUser.address?.city,
@@ -247,39 +247,33 @@ exports.createOrUpdate = async (req, res) => {
     }
 
     const userData = {
-      auth0Id: req.body.auth0Id,
-      email: req.body.email,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      phoneNumber: req.body.phoneNumber,
+      auth0Id: req.body["auth0Id"],
+      email: req.body["email"],
+      firstName: req.body["firstName"],
+      lastName: req.body["lastName"],
+      phoneNumber: req.body["phoneNumber"],
       profile: {
-        dateOfBirth: req.body.dateOfBirth,
-        // gender: req.body.gender,
-        profilePictureUrl: req.body.profilePictureUrl,
-        marketingBudget: {
-          frequency: req.body.profile?.marketingBudget?.frequency || "monthly",
-          adBudget: req.body.profile?.marketingBudget?.adBudget || 0,
-          costPerAcquisition:
-            req.body.profile?.marketingBudget?.costPerAcquisition || 0,
-          dailySpendingLimit:
-            req.body.profile?.marketingBudget?.dailySpendingLimit || 0,
-          marketingChannels:
-            req.body.profile?.marketingBudget?.marketingChannels || "",
-          monthlyBudget: req.body.profile?.marketingBudget?.monthlyBudget || 0,
-          preferredPlatforms:
-            req.body.profile?.marketingBudget?.preferredPlatforms || "",
-          notificationPreferences:
-            req.body.profile?.marketingBudget?.notificationPreferences || [],
-          roiTarget: req.body.profile?.marketingBudget?.roiTarget || 0,
-        },
+        dateOfBirth: req.body["dateOfBirth"],
+        profilePictureUrl: req.body["profilePictureUrl"]
+      },
+      marketingBudget: {
+        frequency: req.body["marketingBudget"] ? req.body["marketingBudget"]["frequency"] : "monthly",
+        adBudget: req.body["marketingBudget"] ? req.body["marketingBudget"]["adBudget"] : 0,
+        costPerAcquisition: req.body["marketingBudget"] ? req.body["marketingBudget"]["costPerAcquisition"] : 0,
+        dailySpendingLimit: req.body["marketingBudget"] ? req.body["marketingBudget"]["dailySpendingLimit"] : 0,
+        marketingChannels: req.body["marketingBudget"] ? req.body["marketingBudget"]["marketingChannels"] : "",
+        monthlyBudget: req.body["marketingBudget"] ? req.body["marketingBudget"]["monthlyBudget"] : 0,
+        preferredPlatforms: req.body["marketingBudget"] ? req.body["marketingBudget"]["preferredPlatforms"] : "",
+        notificationPreferences: req.body["marketingBudget"] ? req.body["marketingBudget"]["notificationPreferences"] : [],
+        roiTarget: req.body["marketingBudget"] ? req.body["marketingBudget"]["roiTarget"] : 0
       },
       address: {
-        street: req.body.address?.street || "",
-        city: req.body.address?.city || "",
-        state: req.body.address?.state || "",
-        zipCode: req.body.address?.zipCode || "",
-        country: req.body.address?.country || "",
-      },
+        street: req.body["address"] ? req.body["address"]["street"] : "",
+        city: req.body["address"] ? req.body["address"]["city"] : "",
+        state: req.body["address"] ? req.body["address"]["state"] : "",
+        zipCode: req.body["address"] ? req.body["address"]["zipCode"] : "",
+        country: req.body["address"] ? req.body["address"]["country"] : ""
+      }
     };
 
     const filter = { email: req.body.email };

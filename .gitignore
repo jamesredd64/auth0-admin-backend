@@ -74,3 +74,6 @@ testFetchUser.jsx
 scripts/
 
 
+models/AdminCode.js
+models/schemas.js
+routes/admin.js

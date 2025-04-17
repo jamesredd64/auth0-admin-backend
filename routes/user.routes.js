@@ -62,69 +62,47 @@ router.post('/', async (req, res) => {
 
 // Update user by auth0Id
 router.put('/:auth0Id', async (req, res) => {
-  try {
-    const { auth0Id } = req.params;
-    const updateData = req.body;
-    
-    console.log('Updating user with auth0Id:', auth0Id);
-    console.log('Update data received:', JSON.stringify(updateData, null, 2));
+  const { auth0Id } = req.params;
+  const { section } = req.query;
+  const updates = req.body;
 
-    // Find and update the user
+  try {
+    let updateQuery = {};
+
+    switch (section) {
+      case 'meta':
+        updateQuery = {
+          email: updates.email,
+          firstName: updates.firstName,
+          lastName: updates.lastName,
+          phoneNumber: updates.phoneNumber,
+          profile: updates.profile
+        };
+        break;
+      case 'address':
+        updateQuery = { address: updates.address };
+        break;
+      case 'marketing':
+        updateQuery = { marketingBudget: updates.marketingBudget };
+        break;
+      default:
+        // If no section specified, update all fields
+        updateQuery = updates;
+    }
+
     const updatedUser = await User.findOneAndUpdate(
       { auth0Id },
-      {
-        $set: {
-          email: updateData.email,
-          firstName: updateData.firstName,
-          lastName: updateData.lastName,
-          phoneNumber: updateData.phoneNumber,
-          
-          // Profile fields
-          "profile.dateOfBirth": updateData.profile?.dateOfBirth ?? null,
-          "profile.gender": updateData.profile?.gender ?? "",
-          "profile.profilePictureUrl": updateData.profile?.profilePictureUrl ?? "",
-          "profile.role": updateData.profile?.role ?? "user",
-          
-          // Marketing Budget fields (at root level)
-          "marketingBudget.adBudget": updateData.marketingBudget?.adBudget ?? 0,
-          "marketingBudget.costPerAcquisition": updateData.marketingBudget?.costPerAcquisition ?? 0,
-          "marketingBudget.dailySpendingLimit": updateData.marketingBudget?.dailySpendingLimit ?? 0,
-          "marketingBudget.marketingChannels": updateData.marketingBudget?.marketingChannels ?? "",
-          "marketingBudget.monthlyBudget": updateData.marketingBudget?.monthlyBudget ?? 0,
-          "marketingBudget.preferredPlatforms": updateData.marketingBudget?.preferredPlatforms ?? "",
-          "marketingBudget.notificationPreferences": updateData.marketingBudget?.notificationPreferences ?? [],
-          "marketingBudget.roiTarget": updateData.marketingBudget?.roiTarget ?? 0,
-          "marketingBudget.frequency": updateData.marketingBudget?.frequency ?? "monthly",
-          
-          // Address fields
-          "address.street": updateData.address?.street ?? "",
-          "address.city": updateData.address?.city ?? "",
-          "address.state": updateData.address?.state ?? "",
-          "address.zipCode": updateData.address?.zipCode ?? "",
-          "address.country": updateData.address?.country ?? "",
-          
-          isActive: updateData.isActive ?? true
-        }
-      },
-      { 
-        new: true,
-        runValidators: true
-      }
+      { $set: updateQuery },
+      { new: true }
     );
 
     if (!updatedUser) {
-      console.log('No user found for update');
       return res.status(404).json({ message: 'User not found' });
     }
 
-    console.log('User updated successfully:', updatedUser);
     res.json(updatedUser);
-  } catch (err) {
-    console.error('Error updating user:', err);
-    res.status(500).json({ 
-      message: 'Error updating user',
-      error: err.message
-    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

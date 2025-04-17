@@ -123,10 +123,12 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { auth0Id } = req.params;
-    const updateData = req.body;
+    const { section } = req.query;
+    const updates = req.body;
 
     console.log("Controller: Updating user:", auth0Id);
-    console.log("Update data received:", JSON.stringify(updateData, null, 2));
+    console.log("Section:", section);
+    console.log("Update data received:", JSON.stringify(updates, null, 2));
 
     // Find the existing user
     const existingUser = await User.findOne({ auth0Id });
@@ -135,57 +137,38 @@ exports.update = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Create update object with dot notation for nested fields
-    const updateObject = {
-      $set: {
-        firstName: updateData.firstName || existingUser.firstName,
-        lastName: updateData.lastName || existingUser.lastName,
-        phoneNumber: updateData.phoneNumber || existingUser.phoneNumber,
-        email: updateData.email || existingUser.email,
-        "marketingBudget.frequency":
-          updateData.marketingBudget?.frequency ||
-          existingUser.marketingBudget?.frequency,
-        "marketingBudget.adBudget":
-          updateData.marketingBudget?.adBudget ||
-          existingUser.marketingBudget?.adBudget,
-        "marketingBudget.costPerAcquisition":
-          updateData.marketingBudget?.costPerAcquisition ||
-          existingUser.marketingBudget?.costPerAcquisition,
-        "marketingBudget.dailySpendingLimit":
-          updateData.marketingBudget?.dailySpendingLimit ||
-          existingUser.marketingBudget?.dailySpendingLimit,
-        "marketingBudget.monthlyBudget":
-          updateData.marketingBudget?.monthlyBudget ||
-          existingUser.marketingBudget?.monthlyBudget,
-        "marketingBudget.roiTarget":
-          updateData.marketingBudget?.roiTarget ||
-          existingUser.marketingBudget?.roiTarget,
-        "marketingBudget.marketingChannels":
-          updateData.marketingBudget?.marketingChannels ||
-          existingUser.marketingBudget?.marketingChannels,
-        "marketingBudget.preferredPlatforms":
-          updateData.marketingBudget?.preferredPlatforms ||
-          existingUser.marketingBudget?.preferredPlatforms,
-        "marketingBudget.notificationPreferences":
-          updateData.marketingBudget?.notificationPreferences ||
-          existingUser.marketingBudget?.notificationPreferences,
-        "address.street":
-          updateData.address?.street || existingUser.address?.street,
-        "address.city": updateData.address?.city || existingUser.address?.city,
-        "address.state":
-          updateData.address?.state || existingUser.address?.state,
-        "address.zipCode":
-          updateData.address?.zipCode || existingUser.address?.zipCode,
-        "address.country":
-          updateData.address?.country || existingUser.address?.country,
-      },
-    };
+    let updateQuery = {};
+
+    switch (section) {
+      case 'meta':
+        updateQuery = {
+          email: updates.email,
+          firstName: updates.firstName,
+          lastName: updates.lastName,
+          phoneNumber: updates.phoneNumber,
+          profile: updates.profile
+        };
+        break;
+      case 'address':
+        updateQuery = { address: updates.address };
+        break;
+      case 'marketing':
+        updateQuery = { marketingBudget: updates.marketingBudget };
+        break;
+      default:
+        // If no section specified, update all fields
+        updateQuery = updates;
+    }
 
     // Update the user
-    const updatedUser = await User.findOneAndUpdate({ auth0Id }, updateObject, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedUser = await User.findOneAndUpdate(
+      { auth0Id },
+      { $set: updateQuery },
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     if (!updatedUser) {
       throw new Error("Update failed - user not found after update");

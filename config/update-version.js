@@ -6,7 +6,7 @@ console.log('Current directory:', process.cwd());
 
 const updateVersion = () => {
   try {
-    const versionPath = path.join(process.cwd(), 'config/version.ts');
+    const versionPath = path.join(process.cwd(), 'config/version.js');
     console.log('Looking for version file at:', versionPath);
     
     const content = fs.readFileSync(versionPath, 'utf8');

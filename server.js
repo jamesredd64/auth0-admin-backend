@@ -13,6 +13,7 @@ const os = require('os');
 const assetsRoutes = require('./routes/assets.routes');
 const staticMiddleware = require('./middleware/static.middleware');
 const emailRoutes = require('./routes/email.routes');
+const VERSION = require('./config/version');
 
 const app = express();
 
@@ -44,6 +45,133 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   next();
+});
+
+// Add this route before your other routes
+app.get('/', (req, res) => {
+  const buildDate = new Date(VERSION.buildDate).toLocaleDateString();
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Stagholme API Server</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="/favicon.png">
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+          }
+          h1 {
+            margin: 0 0 1rem 0;
+            color: #1a1a1a;
+          }
+          .info {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+          }
+          .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+          }
+          .label {
+            color: #666;
+          }
+          .value {
+            color: #1a1a1a;
+            font-weight: 500;
+          }
+          .footer {
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: #666;
+          }
+          @media (prefers-color-scheme: dark) {
+            body {
+              background: #1a1a1a;
+              color: #e5e5e5;
+            }
+            .container {
+              background: #2d2d2d;
+            }
+            h1 {
+              color: #ffffff;
+            }
+            .info {
+              background: #333333;
+            }
+            .label {
+              color: #999;
+            }
+            .value {
+              color: #ffffff;
+            }
+            .footer {
+              color: #999;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Stagholme API Server</h1>
+          
+          <div class="info">
+            <div class="info-item">
+              <span class="label">Version</span>
+              <span class="value">${VERSION.number}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Environment</span>
+              <span class="value">${VERSION.environment}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Build Date</span>
+              <span class="value">${buildDate}</span>
+            </div>
+            ${VERSION.isVercel ? `
+            <div class="info-item">
+              <span class="label">Platform</span>
+              <span class="value">Vercel</span>
+            </div>
+            ` : ''}
+            <div class="info-item">
+              <span class="label">Status</span>
+              <span class="value">Operational</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} Stagholme Inc. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+  
+  res.send(html);
 });
 
 // Routes

@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
 const os = require('os');
 const assetsRoutes = require('./routes/assets.routes');
 const staticMiddleware = require('./middleware/static.middleware');
+const emailRoutes = require('./routes/email.routes');
 
 const app = express();
 
@@ -48,8 +49,9 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/calendar', calendarRoutes);
-app.use('/api/notifications', notificationRoutes); // Removed jwtCheck
-app.use('/api/assets', assetsRoutes); // Enable the assets routes
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/assets', assetsRoutes);
+app.use('/api/email', emailRoutes); // This is correct
 
 // Add logging middleware for debugging
 app.use((req, res, next) => {

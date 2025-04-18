@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-console.log("Defining User model schema...");
+console.log("Defining User model schema....");
 
 const userSchema = new mongoose.Schema({
   auth0Id: {

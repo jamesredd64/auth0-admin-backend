@@ -1,6 +1,6 @@
 {
-  "name": "auth-admin-backend",
-  "version": "1.0.2",
+  "name": "stagholme-server",
+  "version": "1.0.3",
   "description": "Node.js Restful CRUD API with Node.js, Express and MongoDB -Auth0 Integration",
   "main": "server.js",
   "scripts": {
@@ -28,7 +28,7 @@
     "api",
     "mongodb"
   ],
-  "author": "bezkoder",
+  "author": "James Redd",
   "license": "ISC",
   "dependencies": {
     "@getbrevo/brevo": "^2.2.0",

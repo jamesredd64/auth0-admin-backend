@@ -1,6 +1,6 @@
 {
   "name": "stagholme-server",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Node.js Restful CRUD API with Node.js, Express and MongoDB -Auth0 Integration",
   "main": "server.js",
   "scripts": {
@@ -17,7 +17,8 @@
     "migrate:calendar": "node scripts/migrate-calendar-events.js",
     "populate:calendar": "node scripts/populate-calendar-events.js",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "release": "standard-version",
+    "update-version": "node scripts/update-version.js",
+    "release": "npm run update-version && standard-version",
     "migrate:notifications": "node scripts/migrate-notifications-profile-pic.js",
     "prepare-release": "npm run update-version && standard-version --prerelease"
   },

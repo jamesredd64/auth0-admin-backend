@@ -26,16 +26,53 @@ const calendarEventSchema = new mongoose.Schema({
   },
   allDay: {
     type: Boolean,
-    default: true
+    default: true,
+    required: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+    required: true
+  },
+  isAllUsersInvited: {
+    type: Boolean,
+    default: false,
+    required: true
   },
   extendedProps: {
     calendar: {
       type: String,
       required: true,
-      enum: ['danger', 'success', 'primary', 'warning']
+      enum: ['primary', 'success', 'danger', 'warning']
     },
-    description: String,
-    location: String
+    summary: {
+      type: String,
+      required: false
+    },
+    location: {
+      type: String,
+      required: false
+    },
+    attendees: {
+      type: [{
+        email: {
+          type: String,
+          required: true,
+          validate: {
+            validator: function(v) {
+              return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+            },
+            message: props => `${props.value} is not a valid email address`
+          }
+        },
+        name: {
+          type: String,
+          required: true
+        }
+      }],
+      required: true,
+      default: []
+    }
   }
 }, {
   timestamps: true,
@@ -50,7 +87,7 @@ const calendarEventSchema = new mongoose.Schema({
   }
 });
 
-// Add index for auth0Id
+// Add index for auth0Id for better query performance
 calendarEventSchema.index({ auth0Id: 1 });
 
 module.exports = mongoose.model('CalendarEvent', calendarEventSchema);

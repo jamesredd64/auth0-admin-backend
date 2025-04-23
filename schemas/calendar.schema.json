@@ -3,7 +3,7 @@
   "title": "Calendar Event",
   "description": "Schema for calendar events",
   "type": "object",
-  "required": ["title", "start"],
+  "required": ["id", "title", "start", "end", "allDay", "auth0Id", "isActive", "isAllUsersInvited", "extendedProps"],
   "properties": {
     "id": {
       "type": "string",
@@ -25,34 +25,59 @@
     },
     "allDay": {
       "type": "boolean",
-      "default": true,
       "description": "Whether the event is an all-day event"
+    },
+    "auth0Id": {
+      "type": "string",
+      "description": "Auth0 ID of the event owner"
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "Whether the event is active"
+    },
+    "isAllUsersInvited": {
+      "type": "boolean",
+      "description": "Whether all users are invited to the event"
     },
     "extendedProps": {
       "type": "object",
+      "required": ["calendar", "attendees"],
       "properties": {
         "calendar": {
           "type": "string",
-          "enum": ["Danger", "Success", "Primary", "Warning"],
+          "enum": ["primary", "success", "danger", "warning"],
           "description": "Event category/color"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Brief summary of the event"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the event"
+        },
+        "attendees": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["email", "name"],
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "Attendee's email address"
+              },
+              "name": {
+                "type": "string",
+                "description": "Attendee's name"
+              }
+            }
+          },
+          "description": "List of event attendees"
         }
-      },
-      "required": ["calendar"]
-    },
-    "userId": {
-      "type": "string",
-      "description": "ID of the user who owns this event"
-    },
-    "createdAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Timestamp of event creation"
-    },
-    "updatedAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Timestamp of last update"
+      }
     }
   },
   "additionalProperties": false
 }
+

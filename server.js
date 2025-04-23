@@ -5,15 +5,23 @@ require('dotenv').config();
 
 const connectDB = require('./services/mongodb.js');
 const corsConfig = require('./config/cors.config.js');
-const userRoutes = require('./routes/user.routes');
+const userRoutes = require('./routes/user.routes.js');
 const calendarRoutes = require('./routes/calendar.routes');
 const notificationRoutes = require('./routes/notifications');
+const emailRoutes = require('./routes/email.routes'); // Verify this import
+
 const mongoose = require('mongoose');
 const os = require('os');
 const assetsRoutes = require('./routes/assets.routes');
 const staticMiddleware = require('./middleware/static.middleware');
-const emailRoutes = require('./routes/email.routes');
 const VERSION = require('./config/version');
+const { startEventInvitationScheduler } = require('./schedulers/autoEventInvitation');
+const adminSettingsRoutes = require('./routes/admin.settings.routes');
+// const calendarRoutes = require('./routes/calendar');
+
+
+// Add this to your server startup code, after MongoDB connection is established
+// startEventInvitationScheduler();
 
 const app = express();
 
@@ -174,24 +182,43 @@ app.get('/', (req, res) => {
   res.send(html);
 });
 
+// Add logging middleware for debugging
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`🔍 [${timestamp}] Incoming Request:`, {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    params: req.params,
+    query: req.query,
+    body: req.body,
+    headers: {
+      'content-type': req.headers['content-type'],
+      'user-agent': req.headers['user-agent'],
+      'authorization': req.headers['authorization'] ? '**Present**' : '**Not Present**'
+    }
+  });
+  
+  // Log the response
+  const originalSend = res.send;
+  res.send = function (data) {
+    console.log(`📤 [${timestamp}] Response:`, {
+      statusCode: res.statusCode,
+      data: data?.toString().substring(0, 200) + (data?.toString().length > 200 ? '...' : '')
+    });
+    return originalSend.apply(res, arguments);
+  };
+
+  next();
+});
+
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/assets', assetsRoutes);
 app.use('/api/email', emailRoutes); // This is correct
-
-// Add logging middleware for debugging
-app.use((req, res, next) => {
-  console.log('Incoming request:', {
-    method: req.method,
-    path: req.path,
-    params: req.params,
-    query: req.query,
-    body: req.body
-  });
-  next();
-});
+app.use('/api/admin', adminSettingsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -474,6 +501,7 @@ const startServer = async () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV}`);
       console.log(`Static files served from: ${path.join(__dirname, 'public')}`);
+      console.log(`Email service: ${process.env.EMAIL_FROM || 'Not configured'}`);
     });
   } catch (err) {
     console.error('Failed to start server:', err);
@@ -495,6 +523,9 @@ process.on('unhandledRejection', (err) => {
 
 // Start server
 startServer();
+
+// after MongoDB connection is established
+// startEventInvitationScheduler();
 
 // Export the app for Vercel
 module.exports = app;

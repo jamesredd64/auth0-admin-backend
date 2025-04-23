@@ -3,8 +3,16 @@ const router = express.Router();
 const calendarController = require('../controllers/calendar.controller.js');
 
 // Routes
+// const { getAllEvents } = require('./controllers/eventsController');
+
+// Route to fetch all events
+
+
+module.exports = router;
+
 router.post('/', calendarController.createEvent);
 router.get('/', calendarController.getEvents);
+router.get('/all', calendarController.getAllEvents);
 router.get('/:id', calendarController.getEventById);  // This will now handle auth0Id
 router.patch('/:id', calendarController.updateEvent);
 router.delete('/:id', calendarController.deleteEvent);

@@ -72,6 +72,37 @@ exports.getEvents = async (req, res) => {
   }
 };
 
+exports.getAllEvents = async (req, res) => {
+  try {
+    console.log('Fetching all events');
+
+    // Fetch all events without filtering by auth0Id
+    const events = await CalendarEvent.find();
+    console.log(`Found ${events.length} events`);
+
+    // Format the events for the client
+    const formattedEvents = events.map(event => ({
+      id: event._id.toString(),
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      extendedProps: {
+        calendar: event.extendedProps?.calendar || 'primary',
+        description: event.extendedProps?.description,
+        location: event.extendedProps?.location,
+      },
+    }));
+
+    // Send the formatted events as a response
+    res.json(formattedEvents);
+  } catch (error) {
+    console.error('Error fetching all events:', error);
+    res.status(500).json({ message: 'Error fetching all events', error: error.message });
+  }
+};
+
+
 // Modified to search by auth0Id instead of _id
 exports.getEventById = async (req, res) => {
   try {

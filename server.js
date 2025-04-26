@@ -184,7 +184,7 @@ app.get('/', (req, res) => {
 
 // Add logging middleware for debugging
 app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
+  const timestamp = new Date().toLocaleString(); // Use local time instead of ISO
   console.log(`🔍 [${timestamp}] Incoming Request:`, {
     method: req.method,
     url: req.url,
@@ -525,7 +525,7 @@ process.on('unhandledRejection', (err) => {
 startServer();
 
 // after MongoDB connection is established
-// startEventInvitationScheduler();
+startEventInvitationScheduler();
 
 // Export the app for Vercel
 module.exports = app;

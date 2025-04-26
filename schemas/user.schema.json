@@ -102,6 +102,11 @@
               "description": "Frequency of budget allocation"
             }
           }
+        },
+        "timezone": {
+          "type": "string",
+          "description": "User's timezone (IANA timezone identifier)",
+          "default": "America/New_York"
         }
       }
     },

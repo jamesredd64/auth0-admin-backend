@@ -39,24 +39,37 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Check for existing user first
+    const existingUser = await User.findOne({ $or: [{ email }, { auth0Id }] });
+
+    // Ensure default profile with role is set, preserving existing role if any
+    const userData = {
+      ...req.body,
+      profile: {
+        ...req.body.profile,
+        role: existingUser?.profile?.role || req.body.profile?.role || 'user' // Preserve existing role
+      },
+      isActive: true
+    };
+
     // Use findOneAndUpdate to either update existing user or create new one
     const user = await User.findOneAndUpdate(
       { $or: [{ email }, { auth0Id }] },
-      req.body,
+      userData,
       { 
-        new: true,           // Return the updated document
-        upsert: true,        // Create document if it doesn't exist
-        runValidators: true  // Run schema validators on update
+        new: true,           
+        upsert: true,        
+        runValidators: true, 
+        setDefaultsOnInsert: true 
       }
     );
-    
-    const statusCode = user.createdAt === user.updatedAt ? 201 : 200;
-    res.status(statusCode).json(user);
+
+    res.status(201).json(user);
   } catch (err) {
-    console.error('Error creating/updating user:', err);
+    console.error('Error creating user:', err);
     res.status(500).json({ 
-      message: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      message: "Error creating user",
+      error: err.message
     });
   }
 });

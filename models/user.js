@@ -44,6 +44,16 @@ const userSchema = new mongoose.Schema({
       default: "user",
       required: false,
     },
+    timezone: {
+      type: String,
+      default: "America/New_York",
+      validate: {
+        validator: function(v) {
+          return Intl.supportedValuesOf('timeZone').includes(v);
+        },
+        message: props => `${props.value} is not a valid timezone!`
+      }
+    }
   },
   marketingBudget: {
     adBudget: {

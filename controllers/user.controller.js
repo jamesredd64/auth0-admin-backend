@@ -119,6 +119,32 @@ exports.findOne = async (req, res) => {
   }
 };
 
+exports.getUserProfileByAuth0Id = async (req, res) => {
+  try {
+    // Extract the auth0Id from request parameters
+    const { auth0Id } = req.params;
+
+    // Find the user based on auth0Id
+    const user = await User.findOne({ auth0Id });
+
+    // If no user is found, return a 404 error
+    if (!user) {
+      return res.status(404).json({
+        message: `User not found with auth0Id ${auth0Id}`,
+      });
+    }
+
+    // Return the profile information
+    res.status(200).json(user.profile);
+  } catch (err) {
+    // Handle errors and return a 500 error
+    res.status(500).json({
+      message: err.message || `Error retrieving user profile with auth0Id ${req.params.auth0Id}`,
+    });
+  }
+};
+
+
 // Update user by auth0Id
 exports.update = async (req, res) => {
   try {
@@ -256,7 +282,8 @@ exports.createOrUpdate = async (req, res) => {
         state: req.body["address"] ? req.body["address"]["state"] : "",
         zipCode: req.body["address"] ? req.body["address"]["zipCode"] : "",
         country: req.body["address"] ? req.body["address"]["country"] : ""
-      }
+      },
+      isActive: req.body["isActive"] || false
     };
 
     const filter = { email: req.body.email };

@@ -42,12 +42,13 @@ router.post('/', async (req, res) => {
     // Check for existing user first
     const existingUser = await User.findOne({ $or: [{ email }, { auth0Id }] });
 
-    // Ensure default profile with role is set, preserving existing role if any
+    // Ensure default profile with role and timezone is set
     const userData = {
       ...req.body,
       profile: {
         ...req.body.profile,
-        role: existingUser?.profile?.role || req.body.profile?.role || 'user' // Preserve existing role
+        role: existingUser?.profile?.role || req.body.profile?.role || 'user',
+        timezone: req.body.profile?.timezone || 'America/New_York' // Ensure timezone has a default
       },
       isActive: true
     };
@@ -203,6 +204,9 @@ router.get('/lookup/search', requireAuth, async (req, res) => {
     });
   }
 });
+
+// Define the route to get user profile
+router.get("/users/:auth0Id/profile", userController.getUserProfileByAuth0Id);
 
 module.exports = router;
 

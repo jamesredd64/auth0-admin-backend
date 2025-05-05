@@ -173,6 +173,8 @@ exports.update = async (req, res) => {
           lastName: updates.lastName,
           phoneNumber: updates.phoneNumber,
           profile: updates.profile
+          // marketingBudget: updates.marketingBudget,
+          // address: updates.address
         };
         break;
       case 'address':
@@ -247,65 +249,65 @@ exports.deleteAll = async (req, res) => {
 };
 
 // Create or update a User
-exports.createOrUpdate = async (req, res) => {
-  try {
-    if (!req.body.email) {
-      return res.status(400).json({
-        message: "Email is required",
-      });
-    }
+// exports.createOrUpdate = async (req, res) => {
+//   try {
+//     if (!req.body.email) {
+//       return res.status(400).json({
+//         message: "Email is required",
+//       });
+//     }
 
-    const userData = {
-      auth0Id: req.body["auth0Id"],
-      email: req.body["email"],
-      firstName: req.body["firstName"],
-      lastName: req.body["lastName"],
-      phoneNumber: req.body["phoneNumber"],
-      profile: {
-        dateOfBirth: req.body["dateOfBirth"],
-        profilePictureUrl: req.body["profilePictureUrl"],
-        role: req.body["profile"] ? req.body["profile"]["role"] : "user",
-        timezone: req.body["profile"] ? req.body["profile"]["timezone"] : "",
-        gender: req.body["profile"] ? req.body["profile"]["gender"] : "",
-      },
-      marketingBudget: {
-        frequency: req.body["marketingBudget"] ? req.body["marketingBudget"]["frequency"] : "monthly",
-        adBudget: req.body["marketingBudget"] ? req.body["marketingBudget"]["adBudget"] : 0,
-        costPerAcquisition: req.body["marketingBudget"] ? req.body["marketingBudget"]["costPerAcquisition"] : 0,
-        dailySpendingLimit: req.body["marketingBudget"] ? req.body["marketingBudget"]["dailySpendingLimit"] : 0,
-        marketingChannels: req.body["marketingBudget"] ? req.body["marketingBudget"]["marketingChannels"] : "",
-        monthlyBudget: req.body["marketingBudget"] ? req.body["marketingBudget"]["monthlyBudget"] : 0,
-        preferredPlatforms: req.body["marketingBudget"] ? req.body["marketingBudget"]["preferredPlatforms"] : "",
-        notificationPreferences: req.body["marketingBudget"] ? req.body["marketingBudget"]["notificationPreferences"] : [],
-        roiTarget: req.body["marketingBudget"] ? req.body["marketingBudget"]["roiTarget"] : 0
-      },
-      address: {
-        street: req.body["address"] ? req.body["address"]["street"] : "",
-        city: req.body["address"] ? req.body["address"]["city"] : "",
-        state: req.body["address"] ? req.body["address"]["state"] : "",
-        zipCode: req.body["address"] ? req.body["address"]["zipCode"] : "",
-        country: req.body["address"] ? req.body["address"]["country"] : ""
-      },
-      isActive: req.body["isActive"] || false
-    };
+//     const userData = {
+//       auth0Id: req.body["auth0Id"],
+//       email: req.body["email"],
+//       firstName: req.body["firstName"],
+//       lastName: req.body["lastName"],
+//       phoneNumber: req.body["phoneNumber"],
+//       profile: {
+//         dateOfBirth: req.body["dateOfBirth"],
+//         profilePictureUrl: req.body["profilePictureUrl"],
+//         role: req.body["profile"] ? req.body["profile"]["role"] : "user",
+//         timezone: req.body["profile"] ? req.body["profile"]["timezone"] : "",
+//         gender: req.body["profile"] ? req.body["profile"]["gender"] : "",
+//       },
+//       marketingBudget: {
+//         frequency: req.body["marketingBudget"] ? req.body["marketingBudget"]["frequency"] : "monthly",
+//         adBudget: req.body["marketingBudget"] ? req.body["marketingBudget"]["adBudget"] : 0,
+//         costPerAcquisition: req.body["marketingBudget"] ? req.body["marketingBudget"]["costPerAcquisition"] : 0,
+//         dailySpendingLimit: req.body["marketingBudget"] ? req.body["marketingBudget"]["dailySpendingLimit"] : 0,
+//         marketingChannels: req.body["marketingBudget"] ? req.body["marketingBudget"]["marketingChannels"] : "",
+//         monthlyBudget: req.body["marketingBudget"] ? req.body["marketingBudget"]["monthlyBudget"] : 0,
+//         preferredPlatforms: req.body["marketingBudget"] ? req.body["marketingBudget"]["preferredPlatforms"] : "",
+//         notificationPreferences: req.body["marketingBudget"] ? req.body["marketingBudget"]["notificationPreferences"] : [],
+//         roiTarget: req.body["marketingBudget"] ? req.body["marketingBudget"]["roiTarget"] : 0
+//       },
+//       address: {
+//         street: req.body["address"] ? req.body["address"]["street"] : "",
+//         city: req.body["address"] ? req.body["address"]["city"] : "",
+//         state: req.body["address"] ? req.body["address"]["state"] : "",
+//         zipCode: req.body["address"] ? req.body["address"]["zipCode"] : "",
+//         country: req.body["address"] ? req.body["address"]["country"] : ""
+//       },
+//       isActive: req.body["isActive"] || false
+//     };
 
-    const filter = { email: req.body.email };
-    const update = { $set: userData };
-    const options = {
-      new: true,
-      upsert: true,
-      runValidators: true,
-      setDefaultsOnInsert: true,
-    };
+//     const filter = { email: req.body.email };
+//     const update = { $set: userData };
+//     const options = {
+//       new: true,
+//       upsert: true,
+//       runValidators: true,
+//       setDefaultsOnInsert: true,
+//     };
 
-    const user = await User.findOneAndUpdate(filter, update, options);
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while saving the User.",
-    });
-  }
-};
+//     const user = await User.findOneAndUpdate(filter, update, options);
+//     res.status(200).json(user);
+//   } catch (err) {
+//     res.status(500).json({
+//       message: err.message || "Some error occurred while saving the User.",
+//     });
+//   }
+// };
 
 // Add this new controller method
 exports.saveUserData = async (req, res) => {

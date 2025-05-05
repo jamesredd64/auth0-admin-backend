@@ -139,7 +139,10 @@ router.get('/lookup', requireAuth, async (req, res) => {
         'profile.dateOfBirth': 1,
         'profile.gender': 1,
         'profile.profilePictureUrl': 1,
-        'profile.role': 1
+        'profile.role': 1,
+        'profile.timezone': 1,
+        'marketingBudget': 1,
+        'address': 1
       }
     ).lean(); // Use lean() for better performance
     
@@ -185,7 +188,10 @@ router.get('/lookup/search', requireAuth, async (req, res) => {
         'profile.dateOfBirth': 1,
         'profile.gender': 1,
         'profile.profilePictureUrl': 1,
-        'profile.role': 1
+        'profile.role': 1,
+        'profile.timezone': 1,
+        'marketingBudget': 1,
+        'address': 1
       }
     ).lean();
 

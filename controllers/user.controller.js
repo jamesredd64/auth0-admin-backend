@@ -263,7 +263,10 @@ exports.createOrUpdate = async (req, res) => {
       phoneNumber: req.body["phoneNumber"],
       profile: {
         dateOfBirth: req.body["dateOfBirth"],
-        profilePictureUrl: req.body["profilePictureUrl"]
+        profilePictureUrl: req.body["profilePictureUrl"],
+        role: req.body["profile"] ? req.body["profile"]["role"] : "user",
+        timezone: req.body["profile"] ? req.body["profile"]["timezone"] : "",
+        gender: req.body["profile"] ? req.body["profile"]["gender"] : "",
       },
       marketingBudget: {
         frequency: req.body["marketingBudget"] ? req.body["marketingBudget"]["frequency"] : "monthly",

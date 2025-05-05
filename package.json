@@ -24,7 +24,8 @@
     "migrate:calendar-fields": "node scripts/migrate-calendar-fields.js",
     "init-admin": "node scripts/init-admin-settings.js",
     "populate:admin": "node scripts/populate-admin-settings.js",
-    "verify:admin": "node scripts/verify-admin-settings.js"
+    "verify:admin": "node scripts/verify-admin-settings.js",
+    "update-users": "node scripts/UpdateUsers.js"
   },
   "keywords": [
     "nodejs",

@@ -1,11 +1,12 @@
 {
   "name": "stagholme-api-server",
-  "version": "1.0.4",
+  "version": "1.1.0-0",
   "description": "Node.js Restful CRUD API with Node.js, Express and MongoDB -Auth0 Integration",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "release-prod": "npm run prepare-release",
     "recreate-db": "node scripts/recreate-mongodb-schema.js",
     "dev": "cross-env node server.js",
     "build": "npm install",

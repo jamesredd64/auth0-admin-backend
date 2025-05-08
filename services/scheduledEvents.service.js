@@ -31,7 +31,7 @@ const scheduledEventSchema = new mongoose.Schema({
   }
 });
 
-const ScheduledEvent = mongoose.model('ScheduledEvent', scheduledEventSchema);
+const ScheduledEvent = mongoose.model('scheduledevents', scheduledEventSchema);
 
 class ScheduledEventService {
   static async getActiveUsers() {

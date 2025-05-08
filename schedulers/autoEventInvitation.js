@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { CronJob } = require('cron');
-const ScheduledEvent = require('../models/scheduledEvent');
+const ScheduledEvent = require('../models/scheduledevent');
 const User = require('../models/user');
 const { sendEventInvitation } = require('../routes/email.routes');
 const { generateICalEvent } = require('../utils/ical.utils');

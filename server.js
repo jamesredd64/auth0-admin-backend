@@ -17,6 +17,10 @@ const staticMiddleware = require('./middleware/static.middleware');
 const VERSION = require('./config/version');
 const { startEventInvitationScheduler } = require('./schedulers/autoEventInvitation');
 const adminSettingsRoutes = require('./routes/admin.settings.routes');
+const scheduledEventsRoutes = require("./routes/scheduledEventsRoutes");
+
+
+
 // const calendarRoutes = require('./routes/calendar');
 
 
@@ -219,6 +223,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/assets', assetsRoutes);
 app.use('/api/email', emailRoutes); // This is correct
 app.use('/api/admin', adminSettingsRoutes);
+app.use("/api/events", scheduledEventsRoutes);
+app.use("/api", scheduledEventsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

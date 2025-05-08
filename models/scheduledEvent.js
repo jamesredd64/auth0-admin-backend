@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 // Check if model already exists
-if (mongoose.models.ScheduledEvent) {
-  module.exports = mongoose.models.ScheduledEvent;
+if (mongoose.models.scheduledEvent) {
+  module.exports = mongoose.models.scheduledEvent;
 } else {
   const scheduledEventSchema = new mongoose.Schema({
     eventDetails: {
@@ -29,8 +29,11 @@ if (mongoose.models.ScheduledEvent) {
     createdAt: {
       type: Date,
       default: Date.now
-    }
-  });
+    },
+    
+  },
+  { collection: 'scheduledEvent' }
+);
 
   // Add indexes for better query performance
   scheduledEventSchema.index({ status: 1, scheduledTime: 1 });
